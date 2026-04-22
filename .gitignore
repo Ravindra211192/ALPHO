@@ -1,0 +1,40 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+*.log
+
+# --- C/C++ ---
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.exe
+*.out
+*.app
+build/
+bin/
+cmake-build-*/
+
+# --- IDEs & Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.geany/
+
+# --- OS Generated ---
+.DS_Store
+Thumbs.db
+.cache/
+
+# --- Project Specific ---
+# Add any large data files or secret credentials here
+secrets.json
+*.csv
