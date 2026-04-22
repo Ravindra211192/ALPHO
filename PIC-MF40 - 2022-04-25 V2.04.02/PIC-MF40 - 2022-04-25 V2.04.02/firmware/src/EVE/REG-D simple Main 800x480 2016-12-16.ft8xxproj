@@ -1,0 +1,79 @@
+{
+    "content": [
+        {
+            "converter": "Image",
+            "dataCompressed": false,
+            "dataEmbedded": true,
+            "destName": "content/BMP-Test",
+            "imageFormat": 1,
+            "memoryAddress": 0,
+            "memoryLoaded": true,
+            "sourcePath": "C:/Users/hansr/Desktop/BMP-Test.bmp"
+        }
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "COLOR_RGB(0xff, 0xaa, 0x00)",
+        "CMD_TEXT(700, 14, 27, 0, \"a-eberle\")",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_FGCOLOR(0xFFAA00)",
+        "CMD_BUTTON(700, 57, 55, 40, 29, 0, \"F1\")",
+        "CMD_BUTTON(700, 142, 55, 40, 29, 0, \"F2\")",
+        "CMD_BUTTON(700, 227, 55, 40, 29, 0, \"F3\")",
+        "CMD_BUTTON(700, 312, 55, 40, 29, 0, \"F4\")",
+        "CMD_BUTTON(700, 397, 55, 40, 29, 0, \"F5\")",
+        "",
+        "CMD_BUTTON(9, 180, 60, 40, 27, 0, \"AUTO\")",
+        "CMD_BUTTON(75, 180, 60, 40, 30, 0, \"+\")",
+        "CMD_BUTTON(9, 230, 60, 40, 27, 0, \"MANU\")",
+        "CMD_BUTTON(75, 230, 60, 40, 30, 0, \"-\")",
+        "",
+        "CMD_BUTTON(9, 300, 60, 40, 30, 0, \"<\")",
+        "CMD_BUTTON(75, 300, 60, 40, 30, 0, \">\")",
+        "",
+        "CMD_BUTTON(9, 370, 60, 40, 28, 0, \"ESC\")",
+        "CMD_BUTTON(75, 370, 60, 40, 27, 0, \"MENU\")",
+        "CMD_BUTTON(75, 420, 60, 40, 28, 0, \"OK\")",
+        "",
+        "",
+        "SCISSOR_XY(177, 0)",
+        "SCISSOR_SIZE(483, 480)",
+        "CMD_GRADIENT(147, 86, 0xFFFFFF, 147, 358, 0xFFAA00)",
+        "BITMAP_SOURCE(0)",
+        "BITMAP_LAYOUT(L1, 16, 128)",
+        "COLOR_RGB(0, 0, 0)",
+        "BEGIN(BITMAPS)",
+        "BITMAP_TRANSFORM_A(69)",
+        "BITMAP_TRANSFORM_E(69)",
+        "BITMAP_SIZE(NEAREST, BORDER, BORDER, 480, 480)",
+        "VERTEX2II(181, 3, 0, 0)",
+        "END()",
+        "",
+        "VERTEX_FORMAT(0)",
+        "COLOR_RGB(255, 0, 0)",
+        "BEGIN(LINES)",
+        "VERTEX2F(177, 0)",
+        "VERTEX2F(658, 0)",
+        "VERTEX2F(177, 240)",
+        "VERTEX2F(658, 240)",
+        "VERTEX2F(177, 479)",
+        "VERTEX2F(658, 479)",
+        "END()",
+        "",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2067
+    },
+    "registers": {
+        "hSize": 800,
+        "macro": [
+            ""
+        ],
+        "vSize": 480
+    }
+}

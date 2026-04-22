@@ -1,0 +1,56 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_GRADIENT(23, 42, 0x9EA8CA, 23, 262, 0x070AA8)",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_TEXT(400, 435, 27, OPT_CENTERX, \"ALPHOTRONIC GmbH - PIC-MF40 V2.01 31.08.2018 HR\")",
+        "CMD_BUTTON(172, 395, 95, 32, 30, 0, \"INFO\")",
+        "CMD_BUTTON(291, 395, 95, 32, 30, 0, \"CALC\")",
+        "CMD_BUTTON(410, 395, 95, 32, 30, 0, \"TEST\")",
+        "CMD_FGCOLOR(0x3C9AFE)",
+        "CMD_BUTTON(531, 395, 95, 32, 30, 0, \">>>\")",
+        "CMD_TEXT(400, 40, 28, OPT_CENTERX, \"x1=123, y1=456\")",
+        "CMD_TEXT(400, 70, 28, OPT_CENTERX, \"x2=123, y2=456\")",
+        "CMD_TEXT(400, 100, 28, OPT_CENTERX, \"x3=123, y3=456\")",
+        "CMD_TEXT(400, 130, 28, OPT_CENTERX, \"x4=123, y4=456\")",
+        "CMD_TEXT(400, 160, 28, OPT_CENTERX, \"x5=123, y5=456\")",
+        "CMD_CLOCK(120, 120, 100, OPT_NOBACK, 11, 54, 17, 900)",
+        "CMD_TEXT(120, 208, 29, OPT_CENTERX, \"12:34:56\")",
+        "CMD_TEXT(120, 236, 29, OPT_CENTERX, \"11.11.2017\")",
+        "SAVE_CONTEXT()",
+        "CMD_FGCOLOR(0x9497D0)",
+        "CMD_DIAL(680, 120, 65, 0, 57700)",
+        "CMD_GAUGE(680, 121, 110, OPT_NOBACK | OPT_NOPOINTER, 4, 8, 0, 375)",
+        "CMD_TEXT(680, 108, 28, OPT_CENTERX, \"100%\")",
+        "RESTORE_CONTEXT()",
+        "COLOR_RGB(255, 247, 14)",
+        "SCISSOR_XY(10, 0)",
+        "SCISSOR_SIZE(780, 512)",
+        "VERTEX_FORMAT(0)",
+        "BEGIN(LINES)",
+        "VERTEX2F(12, 463)",
+        "VERTEX2F(155, 463)",
+        "VERTEX2F(168, 463)",
+        "VERTEX2F(232, 463)",
+        "VERTEX2F(246, 463)",
+        "VERTEX2F(790, 463)",
+        "END()",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2067
+    },
+    "registers": {
+        "hSize": 800,
+        "macro": [
+            ""
+        ],
+        "vSize": 480
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_GRADIENT(95,114, 0x9EA8CA, 95,363, 0x070AA8)",
+        "CMD_GRADIENT(23, 42, 0x9EA8CA, 22, 332, 0x070AA8)",
+        ";CMD_GRADIENT(23, 42, 0xE2E2E2, 22, 332, 0xE2E2E2)",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_TEXT(400, 210, 31, OPT_CENTERX, \"ALPHOTRONIC GmbH\")",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2067
+    },
+    "registers": {
+        "hSize": 800,
+        "macro": [
+            ""
+        ],
+        "vSize": 480
+    }
+}

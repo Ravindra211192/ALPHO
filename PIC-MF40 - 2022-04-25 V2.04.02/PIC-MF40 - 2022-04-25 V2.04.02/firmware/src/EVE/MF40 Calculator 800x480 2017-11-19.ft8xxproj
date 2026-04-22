@@ -1,0 +1,69 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_GRADIENT(23, 42, 0xFF0123, 23, 262, 0xD21DFF)",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_TEXT(400, 435, 27, OPT_CENTERX, \"Alphotronic GmbH - PIC-MF40 V2.00 12.11.2017 HR\")",
+        "CMD_BUTTON(172, 395, 95, 32, 30, 0, \"INFO\")",
+        "CMD_BUTTON(291, 395, 95, 32, 30, 0, \"CALC\")",
+        "CMD_BUTTON(410, 395, 95, 32, 30, 0, \"TEST\")",
+        "CMD_FGCOLOR(0x3C9AFE)",
+        "CMD_BUTTON(531, 395, 95, 32, 30, 0, \">>>\")",
+        "CMD_TEXT(400, 40, 28, OPT_CENTERX, \"x1=123, y1=456\")",
+        "CMD_TEXT(400, 70, 28, OPT_CENTERX, \"x2=123, y2=456\")",
+        "CMD_TEXT(400, 100, 28, OPT_CENTERX, \"x3=123, y3=456\")",
+        "CMD_TEXT(400, 130, 28, OPT_CENTERX, \"x4=123, y4=456\")",
+        "CMD_TEXT(400, 160, 28, OPT_CENTERX, \"x5=123, y5=456\")",
+        "CMD_CLOCK(120, 120, 100, OPT_NOBACK, 11, 54, 17, 900)",
+        "CMD_TEXT(120, 208, 29, OPT_CENTERX, \"12:34:56\")",
+        "CMD_TEXT(120, 236, 29, OPT_CENTERX, \"11.11.2017\")",
+        "SAVE_CONTEXT()",
+        "CMD_FGCOLOR(0xE511A0)",
+        "RESTORE_CONTEXT()",
+        "COLOR_RGB(255, 247, 14)",
+        "SCISSOR_XY(10, 0)",
+        "SCISSOR_SIZE(780, 512)",
+        "VERTEX_FORMAT(0)",
+        "BEGIN(LINES)",
+        "VERTEX2F(12, 463)",
+        "VERTEX2F(155, 463)",
+        "VERTEX2F(168, 463)",
+        "VERTEX2F(232, 463)",
+        "VERTEX2F(246, 463)",
+        "VERTEX2F(790, 463)",
+        "END()",
+        "",
+        ";offx=90; offy=60;",
+        "COLOR_RGB(255,255,255)",
+        "SCISSOR_XY(265, 50)",
+        "SCISSOR_SIZE(272, 317)",
+        "CMD_GRADIENT(475, 107, 0xFFFFFF, 475, 285, 0x828282)",
+        "CMD_FGCOLOR(0x38B114)",
+        "CMD_BGCOLOR(0x144207)",
+        "CMD_BGCOLOR(0xD89000)",
+        "CMD_KEYS(290, 110, 220, 45, 29, 0, \"C ./\")",
+        "CMD_KEYS(290, 160, 220, 45, 29, 0, \"789*\")",
+        "CMD_KEYS(290, 210, 220, 45, 29, 0, \"456-\")",
+        "CMD_KEYS(290, 260, 220, 45, 29, 0, \"123+\")",
+        "CMD_KEYS(290, 310, 220, 45, 29, 0, \" 0.=\")",
+        "COLOR_RGB(0, 0, 0)",
+        "CMD_TEXT(525, 60, 30, OPT_RIGHTX, \"123456789012345\")",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2067
+    },
+    "registers": {
+        "hSize": 800,
+        "macro": [
+            ""
+        ],
+        "vSize": 480
+    }
+}

@@ -1,0 +1,63 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_GRADIENT(23, 42, 0xFF0123, 23, 126, 0xD21DFF)",
+        "CMD_TEXT(14, 224, 28, 0, \"Calculator \")",
+        "CMD_BUTTON(12, 187, 95, 32, 30, 0, \"INFO\")",
+        "CMD_BUTTON(131, 187, 95, 32, 30, 0, \"CALC\")",
+        "CMD_BUTTON(250, 187, 95, 32, 30, 0, \"TEST\")",
+        "CMD_BUTTON(371, 187, 95, 32, 30, 0, \">>>>>\")",
+        "CMD_CLOCK(88, 84, 83, OPT_NOBACK, 11, 54, 17, 900)",
+        "SAVE_CONTEXT()",
+        "CMD_FGCOLOR(0xE511A0)",
+        "COLOR_RGB(255, 247, 14)",
+        "SCISSOR_XY(10, 0)",
+        "SCISSOR_SIZE(460, 512)",
+        "BEGIN(LINES)",
+        "VERTEX2II(12, 255, 0, 0)",
+        "VERTEX2II(155, 255, 0, 0)",
+        "VERTEX2II(168, 255, 0, 0)",
+        "VERTEX2II(232, 255, 0, 0)",
+        "VERTEX2II(246, 255, 0, 0)",
+        "VERTEX2II(466, 255, 0, 0)",
+        "END()",
+        "RESTORE_CONTEXT()",
+        "SCISSOR_XY(203, 11)",
+        "SCISSOR_SIZE(212, 240)",
+        "CMD_GRADIENT(385, 47, 0xFFFFFF, 387, 186, 0x828282)",
+        "CMD_FGCOLOR(0x38B114)",
+        "CMD_KEYS(215, 50, 185, 35, 29, 'y', \"C  /\")",
+        "CMD_TEXT(272, 52, 29, 0, \"<<\")",
+        "CMD_KEYS(215, 89, 185, 35, 29, 'y', \"789*\")",
+        "CMD_KEYS(215, 128, 185, 35, 29, 'y', \"456-\")",
+        "CMD_KEYS(215, 167, 185, 35, 29, 'y', \"123+\")",
+        "CMD_KEYS(215, 206, 185, 35, 29, 'y', \" 0.=\")",
+        "COLOR_RGB(0, 0, 0)",
+        "CMD_TEXT(219, 209, 29, 0, \"+/-\")",
+        "CMD_TEXT(271, 51, 29, 0, \"<<\")",
+        "CMD_TEXT(311, 52, 29, 0, \"Sqr\")",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_TEXT(220, 210, 29, 0, \"+/-\")",
+        "CMD_TEXT(272, 52, 29, 0, \"<<\")",
+        "CMD_TEXT(312, 53, 29, 0, \"Sqr\")",
+        "COLOR_RGB(0, 0, 0)",
+        "CMD_TEXT(399, 15, 29, OPT_RIGHTX, \"123456789.0123\")",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2049
+    },
+    "registers": {
+        "hSize": 480,
+        "macro": [
+            ""
+        ],
+        "vSize": 272
+    }
+}

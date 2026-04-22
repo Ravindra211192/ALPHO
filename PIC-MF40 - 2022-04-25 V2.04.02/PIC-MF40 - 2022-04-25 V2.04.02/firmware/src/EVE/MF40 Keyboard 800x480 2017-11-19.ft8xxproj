@@ -1,0 +1,52 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_BGCOLOR(0x0000FF)",
+        "CMD_GRADIENT(23, 42, 0xEFEFEF, 23, 270, 0xAAAAAA)",
+        "COLOR_RGB(255, 0, 0)",
+        "CMD_BUTTON(264, 408, 120, 46, 31, 0, \"X\")",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_BUTTON(420, 408, 120, 46, 30, 0, \"OK\")",
+        "",
+        "COLOR_RGB(0,0,0)",
+        "CMD_TEXT(397, 12, 30, OPT_CENTERX, \"Titel\")",
+        "",
+        "CMD_FGCOLOR(0x55AA00)",
+        "CMD_BGCOLOR(0x356A00)",
+        "COLOR_RGB(255,255,255)",
+        "CMD_KEYS(72, 147, 566, 39, 29, 0, \"1234567890/\")",
+        "CMD_KEYS(95, 192, 570, 40, 29, 0, \"QWERTZUIOP+\")",
+        "CMD_KEYS(118, 238, 518, 38, 29, 0, \"ASDFGHJKL#\")",
+        "CMD_KEYS(91, 284, 567, 41, 29, 0, \"<YXCVBNM,.-\")",
+        "CMD_KEYS(243, 333, 310, 40, 29, ' ', \" \")",
+        "",
+        "CMD_BUTTON(680, 147, 52, 37, 28, 0, \"<<<\")",
+        "CMD_BUTTON(93, 334, 101, 38, 27, 0, \"Shift\")",
+        "CMD_BUTTON(681, 190, 51, 135, 27, 0, \"Enter\")",
+        "",
+        "COLOR_RGB(255, 255, 255)",
+        "BEGIN(RECTS)",
+        "VERTEX2F(2493, 894)",
+        "VERTEX2F(10493, 1707)",
+        "END()",
+        "COLOR_RGB(255, 1, 35)",
+        "CMD_TEXT(172, 82, 31, OPT_CENTERY, \"Text\")",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2067
+    },
+    "registers": {
+        "hSize": 800,
+        "macro": [
+            ""
+        ],
+        "vSize": 480
+    }
+}

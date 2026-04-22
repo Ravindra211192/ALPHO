@@ -1,0 +1,647 @@
+=============================================================================
+PIC-MF40 PIC32 Versionen
+=============================================================================
+ACHTUNG: Dieses Dokument enthält teilweise geheime, nicht zu
+	 veröffentlichende Informationen!
+=============================================================================
+// MPLAB-X Entwicklungsumgebung, Versionsliste:
+// --------------------------------------------
+// XC32         V2.41      C-Compiler
+// PIC32MX_DFP  V1.5.259   Device-Pack für PIC32MX
+// MPLAB X IDE  V5.50      IDE
+// Harmony      V2.06      Framework
+// MCU          PIC32MX350F256H (Microchip)
+// --------------------------------------------
+// Hinweise:
+// - Ab V1.04 / 19.08.2017 (damalige XC32 Version V1.44):
+//  -fno-short-double   // Option für double --> double64 == long double
+// - Zeichen-Codierung: Default war: ISO 8859-1, umgestellt auf Windows 1252
+//   Beide Zeichensätze sind West-Europäisch, unterscheiden sich angeblich in
+//   der Nutzung von Steuerzeichen/Druckbaren Zeichen im Bereich 
+//   0..0x1f und 0x80..0x9f
+=============================================================================
+Copyright(c) 2017..2022 Hans Rüffler, 76137 Karlsruhe, Germany
+=============================================================================
+Versions-Chronik:
+Autoren: HR - Hans Rüffler
+=============================================================================
+Offen/nächste Version:
+=============================================================================
+
+Vorschläge:
+- Splash-Bildschirm einfrieren lassen "Logo only"
+- Einmal erkanntes SI --> merken und nicht durch Zeitrückstellung entfernbar.
+
+
+V2.04.02 / 25.04.2022 HR
+- Source-Code Offenlegung für Alphotronic.
+  Copyright(c) 2017..2022 Hans Rüffler, 76137 Karlsruhe, Germany
+
+V2.04.01 / 03.09.2021 HR
+- INITUSER Command nun auch im User-Setup verfügbar, Hilftext erweitert.
+- Uhrzeiteinstellung, Hilfetext: hmmss --> hhmmss, dmmyyyy --> ddmmyyyy
+
+V2.04.00 / 01.09.2021 HR
+- MODBUS wird nun tatsächlich gesperrt, wenn im Factory-Setup nicht aktiviert.
+  Test: OK
+
+V2.04.00 / 30.08.2021 HR
+- Init-Werte angepasst (UD=UserSetup):
+    UD->P_SET = 40      (zuvor 0)
+    UD->TEMP_max = 950  (zuvor 1200)
+- LED Bezeichnungen angepasst:
+    StdBy (y)   --> Ready (g)   // bei MF40 und HF25
+- TAB Namen angepasst:
+    cos(PHI)    --> HF-Factor
+
+V2.03.03 / 24.06.2020 HR
+- MF40_Setup.NO_SI eingeführt, im FACTORY-SETUP einstellbar:
+  0:"SI active" (Default), 1:"SI not active"
+- USER-SETUP-1, USER-Command CMD vorläufig erweitert:
+    CMD=71f80ba9:   --> NO_SI_Option=1 ("SI not active")
+- Darstellung des Service-Aufforderung erfolgt auf alle drei Hauptseiten
+  rechts unten "SERVICE" hellgrün markiert (statt "V2.03 HR").
+
+V2.03.03 / 23.06.2020 HR
+- Zuweisung des Service-Intervalls:
+  FACTORY-SETUP, Tippen auf Überschrift --> Kommando-Eingabe:
+    SI=YYYYMM
+  Abschluss mit ENTER oder OK, das neue nächste Service-Termin wird sofort 
+  geschrieben, sofern für den Zahlenbereich gilt:
+    202001...209912
+  Weitere Änderungen, die zuvor im FACTORY-SETUP gemacht, jedoch noch nicht
+  mit SAVE gespeichert wurden, werden mitgespeichert.
+  Nach dem Schreibvorgang wird der FACTORY-SETUP beendet und der NEWS-Bildschirm
+  erscheint.
+  Hinweise: 
+  - Das Kommando darf keine Leerzeichen enthalten und es dürfen nicht
+    mehrere Kommandos zusammen angegeben werden.
+  - Die Groß/Kleinschreibung spielt keine Rolle.
+
+V2.03.02 / 22.06.2020 HR
+- Die Anzeige der maximal 9-stelligen Geräte-Seriennummer erfolgt im 
+  News-Bildschirm unter den Tasten, sofern sie ungleich 0 ist:
+    ALPHOTRONIC GmbH - PIC-MFHF V2.03 22.06.2020 HR - S/N:123456789 
+- Zuweisung der Seriennummer:
+  FACTORY-SETUP, Tippen auf Überschrift --> Kommando-Eingabe:
+    SN=123456789
+  Abschluss mit ENTER oder OK, die Seriennummer wird sofort geschrieben, sofern
+  der Zahlenbereich 0..999999999 (max. 9 Stellen) eingehalten wird.
+  Weitere Änderungen, die zuvor im FACTORY-SETUP gemacht, jedoch noch nicht
+  mit SAVE gespeichert wurden, werden mitgespeichert.
+  Nach dem Schreibvorgang wird der FACTORY-SETUP beendet und der NEWS-Bildschirm
+  erscheint (hier wird die Seriennummer angezeigt).
+  Hinweise: 
+  - Das Kommando darf keine Leerzeichen enthalten und es dürfen nicht
+    mehrere Kommandos zusammen angegeben werden.
+  - Die Groß/Kleinschreibung spielt keine Rolle.
+  - SN=0 --> Seriennummer wird im NEWS Bildschírm NICHT angezeigt.
+- USER-SETUP-1, USER-Command Eingabe neu:
+  Beim Tippen auf USER-SETUP-1 erscheint Tastatur zur Kommando-Eingabe.
+  Folgender Befehl steht zur Verfügung:
+        CMD=hhhhhhhh
+  Abschluss mit ENTER oder OK, hhhhhhhh ist eine max. 8-stellige HEX-Zahl.
+  Zunächst sind die folgenden drei festen Zuweisungen verfügbar:
+    CMD=1174fa45    --> RAMP_Option=1
+    CMD=219ab643:   --> GENOFF_Option=1
+    CMD=3139ced7:   --> MODBUS_Option=1
+  Hinweise:
+  - Die DEVKEY Funktionalität wird erst in der nächsten Version implementiert.
+  - Das Kommando darf keine Leerzeichen enthalten und es dürfen nicht
+    mehrere Kommandos zusammen angegeben werden.
+  - Die Groß/Kleinschreibung spielt keine Rolle.
+- USER-SETUP-1+2, Gross-Schreibung wird ab jetzt bevorzugt:
+    Save --> SAVE
+    No   --> NO
+    Yes  --> YES
+- USER-SETUP-1, Auswahl PIDmode_V3:
+    Das der PIDmode_V3 ab jetzt generell gilt, entfällt der bisherige Umschalter
+    für PIDmode_V3 und PIDmode_V2.
+- I-Anteil der Regelung ist nun stets aktiv, also nicht mehr von dem 
+  entsprechenden Eingang am I2C Chip abhängig.
+
+V2.03.01 / 23.04.2020 HR
+- USER-SETUP-1: Rot-Färbung des Buttons "Temp. max" erfolgt jetzt, wenn gilt:
+    TEMP_max > UD.Pyro_1_20mA  -->  ROT
+  Zuvor wurde der Button rot gefärbt, wenn TEMP_max<UD.Pyro_1_20mA
+- STOP durch !StdBy während Ext.Taster gedrückt --> kein Reset-Signal mehr.
+
+V2.03.00 / 24.03.2020 HR
+- Umstieg auf V2.03.
+- Firmware Bezeichnung jetzt "PIC-MFHF".
+- MODBUS, neue float Register:
+    16 : StopAtTemp : Stop Timer at Temp.: 0=OFF, 1..2500 °C
+    18 : TimerDelay : Timer Delay: 0=OFF, 1:Timer starts at TEMP-SET
+- Dokument "MFHF MODBUS Adresstabelle 2020-03-24.xlsx" angepasst.
+
+V2.02.08 / 22.03.2020 HR
+- USER-SETUP, "Temp. max" wird in rot dargestellt, solange gilt:
+    "Pyro-1 20mA -->"   >   "Temp. max"
+- NEWS-Screen: PIC-MF40... --> PIC-MF... oder PIC-HF25... --> PIC-HF...
+- Umschaltung MF/HF nun im FACTORY-SETUP dynamisch möglich.
+  Bei Änderung werden im FACTORY-SETUP die relevanten Strings sofort angepasst,
+  diese werden aber erst bei SAVE vollständig übernommen.
+- Das Samplingrate der Analog-Eingänge (bisher 200 Samples --> Mittelung über
+  200ms) kann nun im FACTORY-SETUP gewählt werden: 
+  0:"ANA 100ms", 1:"ANA 200ms", Default=100ms.
+- RTC-INIT wird nun bei PowerOn durchgeführt, wenn dabei festgestellt wird, 
+  dass das PON Bit im Control-2 Register (0xF) gesetzt ist:
+    01.01.2020 00:00:00
+
+V2.02.07 / 20.03.2020 HR
+- Analog-Eingänge werden nun auf 100ms (100 Doppelsamples/ms) statt 
+  bisher 200ms (200 Doppelsamples/ms) gemittelt.
+- Einfluss von ANA-6 auf ANA-1 (1..2 digits) behoben, indem jetzt wieder
+  8 statt bisher nur 6 Analog-Kanäle automatisch gescannt werden
+  Hinweis: ANA-7+8 werden aktuell nicht verwendet.
+- Auf ExtStart wird nun deutlich schneller reagiert, da auf den Wert des
+  ANA-6 Eingang (ExtStart#) nun direkt (mit lediglich 2 Mittelungen) reagiert
+  wird.
+- PID-Regler, Soll/Ist-Vergleich: Der an PID_Regler() übergebene Sollwert wurde
+  nicht 5/4 gerundet, daher fiel das Resultat oft um 1°C niedriger aus.
+- USER-SETUP, neuer Parameter TIMER_delayed, Wertebereich 0:OFF / 1:TEMP-SET,
+  Anzeige in der zweiten Spalte unter "Timer max.":
+         Timer max.               Timer max.
+          1:00:00                  1:00:00
+        Timer Delay              Timer Delay
+            OFF         oder       TEMP-SET
+- Implementierung des Timer Delays. Der Delay wird nur im Timer-Betrieb 
+  angewendet und nur wenn die Temperaturmessung eingeschaltet ist.
+  Der Timer Delay wird bei SCADA START nicht verwendet, da der neue Parameter
+  über die SCADA noch nicht modifiziert werden kann.
+  Bei externem Start (ExtRun) ist das Timer Delay nicht verwendbar, da hier 
+  stets nur die Zeit hochläuft, aber kein Timer verwendet wird.
+- Die Temperatur TEMP auf der Hauptseite wird bei aktivierter,
+  erweiterter Testdarstellung im News-Bildschirm mit einer statt keiner 
+  Nachkommastelle angezeigt.
+ 
+V2.02.06 / 19.03.2020 HR
+- Neuer Switch im Factory-Setup:
+  0:PIDmode=V3 / 1:PIDmode=V2   // Default=0
+  Hiermit kann das alte Regelungsverfahren reaktiviert werden (PIDmode=V2)
+- Verfahrensbeschreibung zur Wind-Up Vermeidung (PIDmode=V3):
+  Integrator wird gelöscht, solange dE * Kp > 100 --> Wind-Up Vemeidung beim Hochfahren
+  Integrator großzügig begrenzen auf 2000 (2s @ dT=100°C)
+  Integrator nicht unter 0 laufen lassen, da Energie nur gepusht, jedoch nicht gepullt werden kann (P stets >= 0)
+  Dokument hierüber erstellt.
+- RESET wird nun bei IntRun und Drücken von STOP nicht mehr sporadisch ausgeführt.
+
+V2.02.06 / 18.03.2020 HR
+- Grüner Balken: Darstellung des I-Integrators esum=n bei aktivierter,
+  erweiterter Testdarstellung im News-Bildschirm.
+- Neues Wind-Up Vermeidungsverfahren begonnen...
+
+V2.02.05 / 06.03.2020 HR
+- Grüner Statusbalken: Nun wird auch "f=nkHz" nach "REG=n%" angezeigt.
+  Nützlich, da die normale Frequenzanzeige nur im Betrieb angezeigt wird.
+- Einstellung der PID-Parameter jetzt mit Schrittweite 0.05 statt bisher 0.1
+- PID, I-OFF jetzt auf I2C-Controller Pin GPB0 (1-->I-Anteil off), Zustand
+  wird ausgewertet, Anzeige "(Ki=...)" wie bisher im grünen Balken.
+  Hinweis: zuvor auf ANA-6.
+- TEST-Info-Bildschirm, Textänderung bei ANA-6: "I_off" --> "ExtRun#"  
+- ExtStart# (X1/3.27) wird jetzt nun zur externen Steuerung verwendet und
+  nicht mehr der implizite Start mit der LED RUN.
+- Bei ExtRUN wird nun bei Taste STOP ein Steuerkarten-Reset für 0.7s ausgelöst.
+- MF40_Temp_Error führt nun bei Auftreten währen RUN zu STOP (auch bei ExtRUN).
+- MF40_Temp_Error wird nun gelöscht, wenn Temperatur-Messung abgewählt wird.
+- MF40_BlockWM 1/10s Timeout von 1.5s auf 0.5s verkürzt.
+- Steuerkarten-Reset verkürzt von 0.7s auf 0.4s, jetzt mit
+  #define ResetTimerSET zentral einstellbar [1/10s]
+- Festlegung: ExtRunRamp wird es nicht geben, mit ExtStart wird stets nur
+  ExtRun ausgelöst (also keine Rampen).
+
+
+V2.02.04 / 03.03.2020 HR
+- Bugfix bei PSETMAX < 4:
+  PSETMAX>=4 --> >= 4.0 KW max. in 1er Inkrements. OK!
+  PSETMAX<4 --> wurde nicht auf 3.6 sondern auf (INT)PSETMAX gesetzt,
+                also meist auf 3.0
+  PSETMAX<4 --> 3.6 KW, jetzt OK!
+
+V2.02.03 / 04.10.2019 HR
+- Es wird nun überprüft, ob I-Anteil der Regelung deaktiviert werden soll
+  (4.5V Pegel auf ANA-6).
+  Hinweis: bei älteren Geräten, die ANA-6 nicht zur Steuerung des I-Anteils
+  verwenden, ist ANA-6=0 --> I-Anteil aktiv
+- Test-Anzeige, ANA-6 Beschreibungstext: "PregExt" --> "I_off"
+
+V2.02.02 / 15.09.2019 HR
+- Übergabe der HEX-Dateien für MF40+HF25.
+- UD.TEMP_max nun bis 2500 [°C] einstellbar (zuvor nur bis 1500°C),
+  UD.Pyro_1_Sc.v[] nun bis 2500 [°C] einstellbar (zuvor nur bis 1200°C),
+
+V2.02.01 / 14.07.2019 HR
+- Übergabe der HEX-Dateien für MF40+HF25.
+- Änderungen an den LED Texten MF40 und HF25:
+  - MF40 und HF25: "EXT" generell groß
+  - HF25 Pos. 11: "F min" (rot); zuvor "-"
+- FACTORY-SETUP, Überschriften bei HF25 modifiziert:
+         MF40              HF25
+    --------------------------------
+    "PSET-MAX [kW]"   "USET-MAX [V]"
+    "PIST-MAX [kW]"   "Id-MAX [A]"
+    "I-MAX [A]"       "U-HF-MAX [V]"
+  Auch die Felder der Display-Auswahl bei HF25 wurden entsprechend modifiziert.
+- Die + / - Buttons in beiden USER- und im FACTORY-SETUP etwas verbreitert und
+  etwas nach links geschoben, damit ein Seitenwechsel nicht versehentlich
+  ausgelöst wird.
+- USER-SETUP, Anwahl der PID-Seite nur noch möglich, wenn die
+  Temperatur-Messung aktiv (TempMeasuring "0..20mA" oder "4..20mA").
+
+V2.02.00 / 30.03.2019 HR
+- BT815 Support:
+  - FT_DispCSpread = 0 statt 1, sonst Unschärfe durch Farbshifts (sollte
+    eigentlich nicht sein).
+  - OPT_CENTERY ist bei DL_CMD_BUTTON() keine gültige Option, bei BT815 führt
+    sie sogar zum Absturz (Co-Prozessor-Fehler). Mit 0 ersetzt (in den Setups
+    wurde diese Option sinnloserweise verwendet).
+    DL_CMD_BUTTON() unterstützt die Optionen: OPT_3D, OPT_FLAT, OPT_FORMAT
+  - Kurvenpunktauswahlt in Rampe (längerer Touch auf gelben Punkt):
+    ...
+
+V2.01.24 / 14.02.2019 HR
+- Versionsabschluss der V2.01, Übergabe der HEX-Dateien für MF40+HF25.
+- RESET nun über MODBUS / SCADA steuerbar: CMD0.B6
+- Bestätigung des MODBUS / PROFINET Interface durch Herrn Schweizer von
+  Fa. Eissmann, lediglich RESET fehlte!
+
+V2.01.23 / 11.02.2019 HR
+- Sollte eigentlich V2.02.00 werden...
+- SAVE nun auch bei externem Start (ExtRun).
+- MODBUS, Bugfix beim Lesen von Speicherstellen außerhalb des Definitions-
+  bereichs:
+  0,1,2,4,6,8,10,12,14  : 8*4=32 Byte R/W definiert. OK
+  16,18                 : 2*4=8 Byte Spare(=0); versehentlich vorhanden aber ok.
+  20,22,..34            : --> Watchdog-Reset! Ab jetzt mit Fehlermeldung.
+  36..99                : Fehlermeldung, wie es sich gehört.
+  200,201,202,204..214  : 8*4=32 Byte Read-only definiert. OK
+  216,218,..234         : --> Watchdog-Reset! Ab jetzt mit Fehlermeldung.
+  236..299              : Fehlermeldung, wie es sich gehört.
+  Hinweis: ungerade Zwischenwerte (außer 1,201) führen stets zu Fehlermeldung.
+- Explizites Starten von allen Rampen 1..6 nun per CMD0 möglich (B11..8):
+    0: Start der aktuellen Rampe, 1..6: Start der Rampe 1..6
+- getSCADA_Status0() in PIC_MF40.c neu (bisher diskret in PIC_MODBUS.c).
+  Bit-Bedeutung geändert (für V2.01.22 unerheblich, da ausgeliefertes Gerät
+  ohne Temperatur-Regelung.
+    B11 : GenOffUse available (neu)
+    B12 : Temperatur-Messung verfügbar, zuvor B11
+    B13 : Fehler Temperatur-Messung (Drahtbruch), zuvor B12
+
+V2.01.22 / 11.02.2019 HR
+- Versionsabschluss, Auslieferung mit MF20 ohne Temperatur-Messung und
+  ohne Rampen an Fa. Eissmann.
+- Festlegung der MODBUS-Adresstabelle:
+  0..99     R/W Bereich, beginnend mit SCADA_Cmd0
+  100..199  R/W Bereich, mit Schreib-Einschränkung bei nicht gesetzten 
+            SCADA_Cmd1 Bits. Dies ermöglicht eine Seiteneffekt freie Schreib-
+            nutzung ausgewählter R/W Variablen durch die SCADA (AB Gateway).
+            Hinweis für AB: Gemeinsamen Bereich (100..115) mit Abgleich bei
+            Änderung verwenden. Wird alles mit 0 initialisiert, so wird das 
+            daraus resultierende 0-Schreiben in alle Variablen blockiert.
+            Little-Endian Wunsch: 1000..1015 statt 100..115 verwenden.
+  200..299  Read-Only Bereich, beginnend mit SCADA_Status0
+  1000-1999 Little-Endian Bereich für alle Adressen 0..999
+            Die Register werden beim Lesen und Schreiben in Little Endian
+            umgewandelt.
+
+V2.01.22 / 10.02.2019 HR
+- Einführung der erweiterten Version-Nummer: #define SetVersionIntExt 22
+  Die heutige Version ist tatsächlich die 22.Iteration seit V2.01.00 07.06.2018, 
+  aber entscheidend ist die genaue Iterationszählung nicht!
+  Angezeigt wird die erweiterte Versions-Nummer nur im Setup.
+
+V2.01 / 09.02.2019 HR
+- LED_status16() neu, effektiver Status aller 16 LEDs
+- Bereitstellung folgender MODBUS-Variablen
+    P_SET
+    TIMER_SET
+    TEMP_SET
+    PID_Kp
+    PID_Ki
+    PID_Kd
+    P
+    REG%
+    I
+    F
+    COS_PHI
+    TIMER
+    TEMP
+
+V2.01 / 08.02.2019 HR
+- P-IST PWM-Ausgabe hatte noch die feste 40.0-->10V Skalierung, jetzt wie
+  bei ANA mit Skalierung gemäss PSETMAX.
+
+V2.01 / 07.02.2019 HR
+- News-Display, TEST jetzt 2-stufig (nur wenn mit ExtTestDisp freigeschaltet.
+  Wenn nicht freigeschaltet, dann kann nur der Touch-Test genutzt werden.
+V2.01 / 06.02.2019 HR
+- Factory-Setup, neuer Parameter: ExtTestDisp (Default=0:NO ExtTestDisp)
+  Ist ExtTestDisp aktiviert, werden im "News" Bildschirm durch zweimaliges
+  Drücken von TEST erweiterte Informationen ausschließlich für den internen
+  Gebrauch angezeigt, so wie bisher. Dieser erweiterte Test kann nun de-
+  aktiviert werden, auch die Möglichkeit durch sehr langes Drücken von TEST
+  die Touch-Kalibrierdaten darzustellen (Uralt-Menü, nicht mehr zur Verwendung
+  gedacht).
+- HF25 Layout per #define HF25_LAYOUT (statt #define MF40_LAYOUT) kann nun
+  in PIC32.h statisch ausgewählt werden.
+  Hierzu auch die bisherige 0.4 Faktoren für P-IST und P-SET in MG_fac[] auf
+  1.0 angepasst, da ja jetzt die zusätzlichen Faktoren PISTMAX, PSETMAX usw.
+  verfügbar sind.
+- Uhrzeiteingabe:
+  Beim Tippen auf die Uhr oder den Zeit- oder Datumsstring wird mittig eine
+  Hilfe-Info zum Stellen der Uhr eingeblendet. Tippen auf diese --> CALC
+  Im CALC: Beim Tippen auf die Uhr gilt:
+  String 7..8 stellig --> DATUM, ansonsten --> ZEIT
+- CALC: vergrößerte Tastenfelder, jede Zahl im Display kann mit "<<" hinten
+  gekürzt werden, Tasten-Zwischenraum beendet Eingabe nicht mehr (bisher
+  konnte es sein, dass bei nicht ganz präzisem Tastendruck die Eingabe beendet
+  wurde) --> Master-Passwort kann jetzt auch durch Wischen teilweise einge-
+  geben werden (bisher musste jede Taste mittig explizit angetippt werden).
+- User-Setup, "STOP at Temp.", bei 0 wird jetzt "OFF" angezeigt.
+- Lifedata wird nun ermittelt und bei bestimmten Ereignissen nicht-flüchtig
+  im FLASH abgelegt:
+    Gesamt-Betriebsstundenzähler [s]
+    Gesamt-Betriebsstundenzähler Generator [s]
+    Gesamtanzahl der Generator-Zyklen
+    Service-Betriebsstundenzähler [s]
+    Service-Betriebsstundenzähler Generator [s]
+    Service-Anzahl der Generator-Zyklen
+  Auf der "News"-Seite wird bei TEST unter den Analog-Werten angezeigt:
+    "Operation time=0:00:00, Generator=0:00:00 (0 cycles)"
+    - Operation time ist der Gesamt-Betriebsstundenzähler [s]
+    - Generator ist der Gesamt-Betriebsstundenzähler des Generators [s]
+    - Cycles:  Gesamt-Anzahl der Generator-Zyklen
+  Beim Schreiben des FLASH darf die Spannungsversorgung nicht ausgeschaltet
+  werden. Daher kommt ein zyklisches Schreiben dieser Werte nicht in Frage!
+  Die Werte werde aber explizit bei einer der folgenden Aktion gespeichert:
+    - SAVE von User-Setup oder Factory-Setup
+    - SAVE der Rampen-Daten
+    - START (beliebige Bedingung)
+    - STOP  (beliebige Bedingung)
+- FACTORY SETUP, Betriebsstundenzähler und Kommando-Eingabe:
+  Sowohl die Gesamtbetriebsstunden als auch die Servicezähler werden nun
+  angezeigt.
+  Durch Tippen auf FACTORY-SETUP wird die Tastatur zur Kommandeingabe ge-
+  öffnet. Folgende Kommands können eingegeben werden (Groß/Klein unwichtig!):
+    INITLIFE        --> alle Betriebsstundenzähler-Daten werden gelöscht.
+    INITSERVICE     --> nur der Service-Bereich der Betriebsstundenzähler
+                        wird gelöscht.
+    INITUSER        --> Die Userdaten werden komplett initialisiert.
+  Die möglichen Kommandos werden in der Tastatur Titelzeile aufgeführt
+  (Groß/Kleinschreibung unwichtig).
+  Mit OK wird ein Kommando ausgeführt, eine Bestätigung wird für einige
+  Sekunden statt dem String "FACTORY SETUP" angezeigt:
+    ---OK---   oder   ---Syntax-Error--- 
+
+V2.01 / 05.02.2019 HR
+- Unterscheidung zwischen PSETMAX und neu PISTMAX, Vorgabe=40,
+  Factory-Setup erweitert.
+- Factory-Setup, FREQ-MAX jetzt in 1er statt 100er Schritten einstellbar.
+- User-Setup, neuer Parameter "Temp.Measuring": OFF / 0..20mA / 4..20mA,
+  Default=0..20mA
+  Damit müssen die Pyrometer-Parameter nicht verändert werden, um die 
+  Temperaturmessungen zu deaktivieren oder den neuen 4..20mA Bereich zu nutzen.
+  Mit der 4..20mA Messung ist eine Drahtbrucherkennung möglich ab <3mA,
+  Anzeige im Messfeld mit "Error". START mit Error nicht möglich.
+  Felder umsortiert.
+- Bei de-aktivierter Temperatur-Messung ("Temp.Meas. used" = "N0") werden
+  die Felder TEMP und TEMP-SET NICHT angezeigt.
+  In der Rampenansicht wird ein y-Maximum von 100% angenommen, im Rampen-
+  Setup wird die Spalte PID unterdrückt und die Spalte "TEMP" umgenannt
+  in "%PSET (Eingabebereich 0..100).
+  Dieser Modus wird auch aktiv, wenn eines der Felder TEMP oder TEMP-SET
+  ausgeschaltet ist (oder beide).
+  Beim Starten der Rampe wird keine Temperaturkurve gezeichnet (keine 0-Linie).
+  Die Regelung wird überbrückt, Ausgangsgröße entspricht der Prozentzahl.
+
+V2.01 / 20.01.2019 HR
+- User-Setup (jetzt 2 Seiten) mit 2er Ellipsen an der Seite auswählbar.
+  Factory-Setup überarbeitet.
+- TIMER Zehntel-Sekunden nun wählbar. Die Grenze (aktuell 10s), bis zu der die
+  1/10s wählbar sind (+/- und Rotary). Hierzu musste die Verarbeitung des
+  Scroll-Bars komplett geändert werden.
+- USER-SETUP 1:
+  "STOP at Temp." neu: Wenn >0, wird bei RUN die aktuelle Temp. mit diesem
+  Limit verglichen, bei >= erfolgt STOP.
+  "Timer max." neu: im 10 Minuten Raster von 0:10:00.0 bis 18:00:00 wählbar.
+  Besonderheit: 0:10:00 Bereich erlaubt die 1/10s Einstellung von 0..10s
+- USER-SETUP 2 - PID:
+  Ki Überschrift mit Zusatz "Ki (Tn=0.0s)" (Nachstellzeit, Tn=Kp/Ki)
+  Kd Überschrift mit Zusatz "Kd (Tv=0.0s)" (Vorhaltezeit,  Tv=Kd/Kp)
+  Bei Division durch Null wird der Zusatz nicht angezeigt.
+- FACTORY-SETUP:
+  "Use GenOFF" neu: damit kann die Option für "Generator off" gewählt werden.
+  "MODBUS" neu
+  "Temp.SIM" von User hierher: damit kann zu Testzwecken die Temperatur-
+  Simulation gewählt werden.
+  P-MAX neu, 3..1000 (Step 1), ersetzt bisherigen Schalter P*2 (3 --> 3.6kW)
+  I-MAX neu, 0..2000 (Step 1), ersetzt bisherigen Schalter I*2
+  FREQ-MAX neu, 0..2000 (Step 100), ersetzt bisherigen Schalter F*5
+- RAMP-Display: Messboxen, P,P-Set Reihenfolge geändert:
+  P,P-Set,I,cosPHI,FREQ,TEMP
+- Basis-Display: auch hier kann jetzt mit Doppelklick auf die P Messbox
+  die Info-Zeile statt dem AlphoFooter angezeigt werden.
+
+V2.01 / 19.01.2019 HR
+- Ramp-Setup, + / - Tasten vergrößert.
+- MF40-Seite, + / - Tasten vergrößert, Breite wie "OK" Taste.
+- LED-Boxen nicht mehr in 3D, da Display_Ramp mit Messkurve und kompletter
+  Füllung abstürzte (Display-List Überlauf). Dadurch konnten 3300 Bytes (!) in
+  der Display-List gespart werden.
+- Ramp-Display, Doppelklick auf P Messbox --> statt AlphoFooter wird hellgrün
+  unterlegt Info mit weiteren Messwerten und Infos angezeigt.
+- showAlphoFooter() kann auf Font #18 (nicht proportional) umgestellt werden,
+  wenn FOOTER_18 definiert wird.
+  Nachteil: Verzicht auf den Straßennamen, Vorteil: Schärfer!
+- 2. Setup-Seite begonnen (PID Sets B(asis) und 1..4
+
+V2.01 / 18.01.2019 HR
+- Ramp-Setup, vierte Spalte "PID" implementiert.
+  Hierbei kam es jedoch immer wieder zu Seiten-Abstürzen, wenn zuviel
+  dargestellt wurde. Der anfängliche Verdacht, dass eventuell zu viele Tags
+  verwendet werden, bestätigte sich nicht. Die Anzahl der Zeilen ging 
+  extrem in die Stabilität ein (mit 5 Zeilen klappte es ohne Probleme), jedoch
+  auch die Länge der Ramp-Texte war ausschlaggebend.
+  Eine Messung der Füllung des Circular-Buffers ergab keine Auffälligkeiten
+  (knapp 2000 Bytes von 4095 möglichen), so dass eine Messung des Füllstands
+  der Display-List implementiert werden musste.
+  Dieser Füllstand kann mit rd32(REG_CMD_DL) abgefragt werden, jedoch erst,
+  wenn die Circular-Buffer befüllt wurde und der Co-Prozessor diesen ausge-
+  wertet und die Display-List erstellt hat:
+  In Funktion DL_TEST() werden diese Füllstände folgendermaßen ermittelt:
+    DL_TEST_CIR_BUF = DL_L;     // Füllstand Circular Buffer 4095 max.
+  #ifdef DL_TESTused            // Alles weitere nur wenn DL_TESTused definiert
+    if (CDLexec()) return;      // Übertragen DL-Buffer --> Circular Buffer
+    while (CMD_busy());         // Warten, bis Übertragung tatsächlich fertig
+    CDLinit();                  // Init DL-Buffer; dennoch ist Display-List noch
+                                // nicht ausgeführt (erst nach dieser Funktion)
+    DL_TEST_CMD_DL=rd32(REG_CMD_DL);  // Füllstand Display-List 8192 max.
+    // Nun erfolgt Anzeige beider Füllstände links oben, in schwarzer Schrift
+    // auf hellgrünem Untergrund, kleinster Font: "DL=1234,CB=1234"
+  #endif
+  Eine dauerhafte Verwendung der Display-List Füllstandsmessung ist nicht
+  ratsam, da die Seitendarstellungs-Funktion bei der Übertragung der Daten
+  in den Circular-Buffer und während der Arbeit des Co-Prozessors blockiert ist!
+  Daher darf DL_TESTused nur zu Testzwecken definiert werden.
+  Hinweis: der Füllstand des Circular-Buffers wird auf ohne das #define 
+  ermittelt und in DL_TEST_CIR_BUF abgelegt.
+
+V2.01 / 14.12.2018 HR
+- Bugfix bei MODBUS Coil-Verarbeitung
+
+V2.01 / 14.12.2018 HR
+- Entwicklungssystem Upgrades durchgeführt:
+    MPLAB X  V4.20    --> V5.10
+    XC32     V1.44    --> V2.15
+    Harmony  V2.05.01 --> V2.06
+
+V2.01 / 15.10.2018 HR
+- Die H2O LEDs werden nun mit tiefgestellter '2' dargestellt.
+
+V2.01 / 14.10.2018 HR
+- Temperatur-Mitschrieb in Rampenansicht mit roter Kurve über der blau/gelben
+  Soll-Kurve. Diese Messkurve besteht aus 300 Messpunkten.
+  Die alte Kurve wird bei START gelöscht.
+
+V2.01 / 13.10.2018 HR
+- LED_StdBy wird in MF40_Eval() 0.3s "gehalten" für internes Signal StdBy.
+  Es gilt: Ohne StdBy kein RUN, !StdBy-->STOP.
+- R-LEDs und Frequenz werden jetzt erst bei RUN gezeigen.
+  Bei not LED_RUN --> REG-LEDs stets OFF, FREQ "-"
+- Bugfix: RUN flackert 1x bei START, jetzt ok.
+
+V2.01 / 11.10.2018 HR
+- Grundanzeigen Display_MF40 und Display_Ramp verwenden nun dieselbe
+  LEDboxes(int typ) Funktion, die intern die Offsets u.a. beider Displays anhand
+  typ bestimmt.
+  Die Funktionalität "RUN --> StdBy=0", die bisher auf unterster Ebene am
+  Anfang von MF40_Eval() erfüllt wurde, wird jetzt in LEDboxes() erfüllt,
+  damit LED_StdBy abgefragt werden kann (!LED_StdBy --> STOP TIMER).
+- User-Setup: Toggle-Möglichkeit bei boolschen Werten geschaffen. Die Buttons,
+  die durch Tippen umgeschaltet werden können, haben ein dunkleres Blau.
+- "Roll display pages" (Bool) im User-Setup neu (MF40_Userdata.DisplayRoll):
+  0 = kein Rollen der Grundanzeigen, dargestellt als "1>2>3"
+  1 = Rollen der Grundanzeigen, dargestellt als "3>1>2>3>1"
+- User-Setup, umsortiert (Buttons in [] sind boolsch):
+    Pyro-1 0mA -->      PID Kp              [Roll display pages]
+    Pyro-1 20mA -->     PID Ki              [Temp. Simulation]
+    Maximum Temp.       PID Kd
+                        [Generator Off used]
+- Die Ellipsen am unteren Rand zeigen nun die aktuelle Seitenposition 1..3
+- Rampe, blättern nach links "überdeckte" die RESET Taste zur Hälfte, so dass
+  sie in der Rampen-Ansicht nur schwer zu bedienen war. Jetzt wird der Tasten-#
+  bereich ausgespart.
+- Rampen-Setup:
+  Alle Elemente vom Rand Richtung Mitte gerückt, damit es beim Blättern keine
+  Probleme gibt.
+  Rampen-Namen, lange Strings ab 16 Zeichen werden jetzt mit einem kleineren 
+  Font dargestellt, damit sie in den Button passen.
+  Aktionstasten Discard/Save/Insert/Delete/Name... leicht vergrößert und 
+  aufeinander abgestimmt.
+
+V2.01 / 10.10.2018 HR
+- Bugfix: Rad-Drehen ohne gewählte Funktion führte bei anschließender
+  Funktionsauswahl zum Nachstellen der aufgelaufenen Stellbefehle; jetzt
+  wird bei nicht gewählter Funktion Rad-Dreh-Counts gelöscht.
+- Rollieren der Grundanzeigen kann mit #define ROLL_OVER gewählt werden,
+  aktuell auskommentiert. Beim Nicht-Rollieren werden die äußeren Ellipsen
+  nicht dargestellt.
+- LED FREQ --> F-REG
+- Rampe, am Ende des Titels wird " (Save)" angezeigt, wenn sich Daten
+  geändert haben. Bei Drücken des Titels wird dann Save ausgeführt.
+- TEMP_max nun einstellbar 50..1500 [°C], Schritt 50 (MF40_Userdata).
+- Slider MF40 lässt sich nun oben besser greifen, SwipeWindows()...
+- Uhrzeit und Datum wird nun unten links statt PowerOn-Zeit angezeigt.
+- Starten des Factory Setups jetzt nicht mehr mit STOP >1s, sondern:
+  CALC: "C/*-+="
+- Copyright, das nur in den beiden Setup-Menüs unten gezeigt wird, geändert:
+    Neu:    Copyright 2017..2018 HR/ALPHOTRONIC
+    Bisher: Copyright 2017..2018 by Hans Rueffler
+
+V2.01 / 09.10.2018 HR
+- RESET Button in linker LED-Leiste nun funktional:
+  Ca. >1s Drücken --> STOP und 0.7s Steuerkarten-Reset
+- RUN Button bei Generator OFF Schriftfarbe grau statt schwarz.
+- Rampe, jetzt mit 6 Messfeldern (statt zuvor 5):
+  P, P-SET(neu), I, cos(phi), Freq, TEMP
+- Navigation: 
+  Links     : <<< MF40 <<< RAMP <<< RAMP-SETUP  (umlaufend) 
+  Rechts    : MF40 >>> RAMP >>> RAMP-SETUP      (umlaufend) 
+  Unten     : NEWS
+- Darstellung der Ellipsen: MF40, RAMP, RAMP-SETUP: links/rechts/unten
+- ALPHOTRONIC Fußzeile: bei MF40, RAMP und jetzt auch RAMP-SETUP identisch
+- Return aus NEWS: jetzt zu letzten Grundzeige MF40, RAMP oder RAMP-SETUP
+- OK Button in MF40 Grundanzeige neu, erscheint bei P-SET, TIMER oder TEMP-SET.
+- Wenn Feld TEMP-SET nicht sichtbar --> keine Regelung, P-REG = 100%
+- Factory Setup: Pyrometer-Einstellung entfernt.
+- User Setup neu, wird über NEWS mit neuem mittigen SETUP Button gestartet.
+  Wenn ein Feld ausgewählt ist, kann Einstellung mit Rotary Switch oder
+  mit dann eingeblendeten + / - Buttons (rechts unten) erfolgen:
+  Pyrometer-1 0mA -->   -400 .. 1200 [°C] 
+  Pyrometer-1 20mA -->  -400 .. 1200 [°C]
+  PID Kp                0.0 .. 500.0 
+  PID Ki                0.0 .. 500.0
+  PID Kd                0.0 .. 500.0
+  Generator Off used    No / Yes
+  Temp. Simulation      Off / On
+
+V2.01 / 05.10.2018 HR
+- PID-Regler nun verfügbar mit Simulation über Excel-Makro!
+
+V2.01 / 26.08.2018 HR
+- Abschließender Test der CPU-MOD-44 Hardware:
+  U2TX funktionierte einfach nicht, es wurde dasselbe Signal wie auf U2RTS
+  ausgegeben! Interessant hierbei, dass bei dem ersten Prototypen-Modul (HR)
+  ausgerechnet hier ein richtiger Kurzschluss beim COM2-Treiber war und der
+  TX-Fehler auf einen Hardware-Defekt hindeutete. Auffällig war jedoch, dass
+  die COM2 bei Alphotronic beim zweiten von zwei Prototypen-Modulen auch nicht
+  funktionierte. Dieser Test wurde erst am 24.08.2018 durchgeführt und am
+  26.08.2018 die Fehlersuche intensiviert:
+  Lösung: Harmony erlaubt die Zuweisung von U2TX auf Pin 34 (RPF2), was jedoch
+  laut Datenblatt nicht möglich ist. Bei dem von Harmony aufgewählten Zu-
+  weisungscode (1) wird das Signal U2RTS statt U2TX ausgegeben.
+  Fazit: Die Hardware muss umgebaut werden, das Re-Design wurde heute
+  durchgeführt. Auf Harmony ist also bei der Pin-Planung KEIN VERLASS!
+  Änderung:
+    CPU Pin 34 (RPF2):  bisher U2TX --> SDO1
+    CPU Pin 33 (RPF2):  bisher SDO1 (SPI-MOSI) --> U2TX
+  Hinweis: beide Pins 33+34 sind 5V tolerant. U2TX kann vom RS485 Treiber her
+  auf 5V hochgehen, wenn hochohmig (also bei Power-On). 
+
+V2.01 / 24.08.2018 HR
+- Test bei Alphotronic, Bestätigung aller Hardware-Änderungen "2018", lediglich
+  die COM2 funktioniert nicht (TX). Dieses Problem wurde durch eine CPU-MOD-44
+  Hardware-Änderung am 26.08.2018 gelöst.
+
+V2.01 / 21.06.2018 HR
+- Fetten Fehler bei den UARTS gefunden:
+  Die Einstellung DRV_USART_LINE_CONTROL_8NONE2 kann nicht mehr verwendet
+  werden, da im Gegensatz zum COLDFIRE 2 Stop-Bits tatsächlich auch beim
+  Empfang erwartet werden!
+  Jetzt wird für COM1+COM2 DRV_USART_LINE_CONTROL_8NONE1 verwendet
+  Hinweis: Beim TBUS muss weiterhin mit 2 Stop-Bits gearbeitet werden!
+- #define MBSL_VIA_COM2: Wenn definiert, wird MODBUS-SLAVE auf COM2 bereit
+  gestellt (statt auf COM1)
+  COM2:RX gefahren.
+- #define MBSL_4W: Wenn definiert, wird MODBUS-SLAVE in 4-W mit COM1:TX und
+  COM2:RX bereit gestellt.
+
+V2.01 / 12.06.2018 HR
+- MODBUS SLAVE auf COM1 (statt TBUS SLAVE) implementiert.
+  #define hierzu: COM1_MODBUS_SLAVE
+
+V2.01 / 07.06.2018 HR
+- Anpassung für 2018er Hardware mit 6 Analog-Kanälen, IN_TASTER und PWM-2
+
+V2.00 / 30.11.2017 HR
+- Abschluss der V2.00, verwendet Hardware von 2017 mit 8 Analog-Kanälen
+
+V2.00 / 21.11.2017 HR
+- Vorführung...
+
+V2.00 / 31.10.2017 HR
+- Umstellung der Versionsnummer auf V2.00
+
+V1.04 / 24.08.2017 HR
+- Erste PIC-MF40 Version, basiert auf GMC_S0IN12 V1.04 / 24.08.2017
+

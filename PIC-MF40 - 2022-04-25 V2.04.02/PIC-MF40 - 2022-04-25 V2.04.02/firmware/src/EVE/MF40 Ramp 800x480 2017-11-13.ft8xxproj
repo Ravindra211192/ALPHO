@@ -1,0 +1,67 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_BGCOLOR(0x0000FF)",
+        "CMD_GRADIENT(95, 115, 0xFFFFFF, 95, 363, 0xFFFFFF)",
+        ";CMD_GRADIENT(95, 115, 0xE2E2E2, 95, 363, 0xE2E2E2)",
+        "COLOR_RGB(255, 255, 255)",
+        "COLOR_RGB(255, 3, 36)",
+        "CMD_TEXT(400, 20, 30, OPT_CENTERX, \"RAMP DEMO\")",
+        "COLOR_RGB(0,0,0)",
+        ";COLOR_RGB(121, 121, 121)",
+        "LINE_WIDTH(20)",
+        "BEGIN(LINE_STRIP)",
+        "VERTEX2F(1400, 736)",
+        "VERTEX2F(1184, 736)",
+        "VERTEX2F(1184, 6640)",
+        "VERTEX2F(6000, 6640)",
+        "VERTEX2F(6000, 6768)",
+        "VERTEX2F(6000, 6640)",
+        "VERTEX2F(11752, 6640)",
+        "END()",
+        "COLOR_RGB(0, 0, 255)",
+        "LINE_WIDTH(40)",
+        "BEGIN(LINE_STRIP)",
+        "VERTEX2F(1184, 6640)",
+        "VERTEX2F(3472, 4288)",
+        "VERTEX2F(4840, 4272)",
+        "VERTEX2F(5504, 2672)",
+        "VERTEX2F(7808, 2672)",
+        "VERTEX2F(11208, 6640)",
+        "END()",
+        "COLOR_RGB(238, 238, 0)",
+        "POINT_SIZE(200)",
+        "BEGIN(POINTS)",
+        "VERTEX2F(1184, 6624)",
+        "VERTEX2F(3472, 4288)",
+        "VERTEX2F(4840, 4272)",
+        "VERTEX2F(5504, 2672)",
+        "VERTEX2F(7808, 2672)",
+        "COLOR_RGB(255, 153, 10)",
+        "VERTEX2F(11224, 6624)",
+        "END()",
+        "COLOR_RGB(121,121,121)",
+        "CMD_TEXT(93, 46, 27, OPT_CENTERY, \"1200\")",
+        "CMD_TEXT(73, 35, 26, OPT_CENTERY | OPT_RIGHTX, \"o\")",
+        "CMD_TEXT(73, 37, 27, OPT_CENTERY, \"C\")",
+        "CMD_TEXT(133, 396, 27, OPT_RIGHTX, \"22s |\")",
+        "CMD_TEXT(375, 422, 27, OPT_CENTERX, \"01:00\")",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2067
+    },
+    "registers": {
+        "hSize": 800,
+        "macro": [
+            ""
+        ],
+        "vSize": 480
+    }
+}

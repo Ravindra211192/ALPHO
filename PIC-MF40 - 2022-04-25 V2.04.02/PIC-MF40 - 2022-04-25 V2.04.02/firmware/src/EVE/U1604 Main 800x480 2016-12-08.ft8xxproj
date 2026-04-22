@@ -1,0 +1,93 @@
+{
+    "content": [
+        {
+            "converter": "Image",
+            "dataCompressed": false,
+            "dataEmbedded": true,
+            "destName": "content/BMP-Test",
+            "imageFormat": 1,
+            "memoryAddress": 0,
+            "memoryLoaded": true,
+            "sourcePath": "C:/Users/hansr/Desktop/BMP-Test.bmp"
+        }
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_GRADIENT(23, 49, 0xE1E1E1, 23, 337, 0x545454)",
+        "COLOR_RGB(0, 0, 0)",
+        "CMD_TEXT(774, 14, 27, OPT_RIGHTX, \"GOSSEN METRAWATT\")",
+        "COLOR_RGB(255, 85, 0)",
+        "CMD_TEXT(774, 433, 30, OPT_RIGHTX, \"SU1604\")",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_TEXT(691, 412, 27, OPT_RIGHTX, \"ENERGY\")",
+        "CMD_TEXT(773, 412, 27, OPT_RIGHTX, \"CONTROL\")",
+        "CMD_TEXT(774, 412, 27, OPT_RIGHTX, \"CONTROL\")",
+        "COLOR_RGB(170, 170, 170)",
+        "BEGIN(RECTS)",
+        "VERTEX2II(6, 3, 0, 0)",
+        "VERTEX2II(399, 396, 0, 0)",
+        "END()",
+        "COLOR_RGB(209, 209, 209)",
+        "BEGIN(RECTS)",
+        "VERTEX2II(8, 5, 0, 0)",
+        "VERTEX2II(397, 394, 0, 0)",
+        "END()",
+        "COLOR_RGB(255, 255, 255)",
+        "CMD_FGCOLOR(0x38B114)",
+        "CMD_BUTTON(480, 66, 55, 40, 29, 0, \"F1\")",
+        "CMD_BUTTON(480, 142, 55, 40, 29, 0, \"F2\")",
+        "CMD_BUTTON(480, 220, 55, 40, 29, 0, \"F3\")",
+        "CMD_BUTTON(480, 297, 55, 40, 29, 0, \"F4\")",
+        "CMD_BUTTON(480, 374, 55, 40, 29, 0, \"F5\")",
+        "CMD_BUTTON(590, 160, 40, 40, 29, 0, \"+\")",
+        "CMD_BUTTON(590, 280, 40, 40, 29, 0, \"-\")",
+        "CMD_BUTTON(620, 220, 40, 40, 29, 0, \">\")",
+        "CMD_BUTTON(560, 220, 40, 40, 29, 0, \"<\")",
+        "CMD_BUTTON(685, 143, 55, 40, 28, 0, \"ESC\")",
+        "CMD_BUTTON(685, 220, 55, 40, 27, 0, \"MENU\")",
+        "CMD_BUTTON(685, 297, 55, 40, 28, 0, \"OK\")",
+        "",
+        "COLOR_RGB(226, 226, 226)",
+        "CMD_FGCOLOR(0x8D8D8D)",
+        "COLOR_RGB(0, 0, 0)",
+        "CMD_FGCOLOR(0xFF0000)",
+        "COLOR_RGB(0, 0, 0)",
+        "CMD_FGCOLOR(0x2FEE04)",
+        "CMD_BUTTON(15, 419, 70, 30, 27, 0, \"Status\")",
+        "",
+        "SCISSOR_XY(11, 8)",
+        "SCISSOR_SIZE(384, 384)",
+        "CMD_GRADIENT(147, 86, 0xFFFFFF, 147, 358, 0xFFFFFF)",
+        "BITMAP_SOURCE(0)",
+        "BITMAP_LAYOUT(L1, 16, 128)",
+        "COLOR_RGB(0, 0, 0)",
+        "BEGIN(BITMAPS)",
+        "BITMAP_TRANSFORM_A(85)",
+        "BITMAP_TRANSFORM_E(85)",
+        "BITMAP_SIZE(NEAREST, BORDER, BORDER, 384, 384)",
+        "VERTEX2II(11, 8, 0, 0)",
+        "COLOR_RGB(56, 177, 20)",
+        "SCISSOR_XY(570, 13)",
+        "SCISSOR_SIZE(20, 21)",
+        "BEGIN(EDGE_STRIP_R)",
+        "VERTEX2F(9776, -256)",
+        "VERTEX2F(8816, 976)",
+        "END()",
+        "",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2067
+    },
+    "registers": {
+        "hSize": 800,
+        "macro": [
+            ""
+        ],
+        "vSize": 480
+    }
+}

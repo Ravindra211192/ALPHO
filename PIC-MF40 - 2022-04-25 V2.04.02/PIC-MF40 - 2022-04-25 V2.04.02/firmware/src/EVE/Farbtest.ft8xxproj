@@ -1,0 +1,31 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "COLOR_RGB(37,177,2)",
+        "BEGIN(RECTS))",
+        "VERTEX2F(430, 160)",
+        "VERTEX2F(5398, 1025)",
+        "END())",
+        "COLOR_RGB(62, 156, 177)",
+        "BEGIN(RECTS))",
+        "VERTEX2F(430, 2256)",
+        "VERTEX2F(5494, 3057)",
+        "END())",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2065
+    },
+    "registers": {
+        "hSize": 480,
+        "macro": [
+            ""
+        ],
+        "vSize": 272
+    }
+}

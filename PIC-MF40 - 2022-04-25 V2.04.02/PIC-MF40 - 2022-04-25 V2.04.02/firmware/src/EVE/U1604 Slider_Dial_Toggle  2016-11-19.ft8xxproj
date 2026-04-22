@@ -1,0 +1,45 @@
+{
+    "content": [
+    ],
+    "coprocessor": [
+        "CLEAR(1, 1, 1)",
+        "CMD_FGCOLOR(0x1F3F7F)",
+        "CMD_FGCOLOR(0xFF0000)",
+        "CMD_BGCOLOR(0xD89000)",
+        "CMD_GRADIENT(23, 49, 0xF8FFB2, 24, 198, 0xAA00FF)",
+        "CMD_TRACK(230,130,1,1,11)",
+        "TAG(11)",
+        "CMD_DIAL(230, 130, 71, 0, 8000)",
+        "CMD_TOGGLE(51, 69, 100, 27, 0, 30811, \"EIN\\xFFAUS\")",
+        "CMD_SCROLLBAR(46, 22, 392, 20, 0, 0, 1404, 65535)",
+        "CMD_NUMBER(230, 202, 28, OPT_CENTERX, 42)",
+        "CMD_BUTTON(4, 112, 26, 37, 27, 0, \"<\")",
+        "CMD_TEXT(12, 180, 26, 0, \"x0\")",
+        "CMD_TEXT(12, 195, 26, 0, \"x0\")",
+        "CMD_TEXT(12, 210, 26, 0, \"x0\")",
+        "CMD_TEXT(12, 225, 26, 0, \"x0\")",
+        "CMD_TEXT(12, 240, 18, 0, \"ttA=00006318,ttB=00000000,ttC=fff58c64\")",
+        "CMD_TEXT(12, 255, 18, 0, \"ttD=fffffebb,ttE=00006656 ttF=fff3c568\")",
+        "CMD_FGCOLOR(0x3EFF30)",
+        "COLOR_RGB(7, 7, 3)",
+        "CMD_KEYS(327, 100, 140, 37, 29, 'y', \"789*\")",
+        "CMD_KEYS(327, 140, 140, 37, 29, 'y', \"456-\")",
+        "CMD_KEYS(327, 180, 140, 37, 29, 'y', \"123+\")",
+        "CMD_KEYS(327, 220, 140, 37, 29, 'y', \"<0C=\")",
+        "CMD_TEXT(458, 66, 28, OPT_RIGHTX, \"1234567890\")",
+        ""
+    ],
+    "displayList": [
+        ""
+    ],
+    "project": {
+        "device": 2049
+    },
+    "registers": {
+        "hSize": 480,
+        "macro": [
+            ""
+        ],
+        "vSize": 272
+    }
+}
