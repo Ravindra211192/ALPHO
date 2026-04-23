@@ -159,4 +159,104 @@ As you transition from STM32 development, choosing the right editor is key:
 
 ---
 
-**Summary**: You have now replaced the STM32F446 firmware logic with a full Debian Linux environment. Your next steps will involve porting your peripheral logic (UART, SPI, I2C) to the Linux-equivalent drivers (e.g., `/dev/ttyAMA0`, `/dev/spidev0.0`).
+## 9. Hardware Integration: Joy-IT RB-RS485
+
+The **RB-RS485** is a HAT-style board designed to connect directly to the Raspberry Pi's 40-pin GPIO header.
+
+### 9.1 Physical Connection
+1.  **Mounting (26-pin to 40-pin Alignment)**: The RB-RS485 uses a 26-pin header.
+    - **Pin 1 to Pin 1**: You must align **Pin 1 of the board** with **Pin 1 of the Pi 5** (the pin with the square pad).
+    - Pins 27 to 40 on the Pi 5 will remain **uncovered**.
+    - Carefully press down firmly to seat the board.
+2.  **Logic Pins (UART)**: The board connects to the Pi's primary UART. Note that the labels on the RB-RS485 board are from the board's perspective (TX/RX crossover):
+    - **Physical Pin 8 (GPIO 14)**: Raspberry Pi **TX** -> Connects to RB-RS485 **RX**.
+    - **Physical Pin 10 (GPIO 15)**: Raspberry Pi **RX** -> Connects to RB-RS485 **TX**.
+3.  **Power**: It draws 5V, 3.3V, and GND from the header.
+4.  **Expansion**: The additional pins labeled **P0 to P7** on the board are pass-through headers for other GPIOs (e.g., P0 = GPIO17, P1 = GPIO18).
+
+### 9.2 Software Configuration (Linux)
+On the Raspberry Pi 5, the serial port must be enabled in the OS:
+
+1.  **Enable Serial Port**:
+    - Run `sudo raspi-config`.
+    - Go to **3 Interface Options** -> **I6 Serial Port**.
+    - **Login shell over serial?** -> Select **No**.
+    - **Serial port hardware enabled?** -> Select **Yes**.
+    - **Finish** and **Reboot**.
+2.  **Port Name**: After rebooting, the RS485 interface will be accessible at:
+    - Path: `/dev/ttyAMA0` (or `/dev/serial0`)
+3.  **Verification**:
+    ```bash
+    ls -l /dev/serial0
+    # Should point to ttyAMA0
+    ```
+
+### 9.3 Modbus RTU Wiring
+- **DB9 Port**: Use Pin 2 (A) and Pin 3 (B).
+- **Screw Terminals**: Use the terminals labeled **A** and **B**.
+- **Termination**: If this is the end of your Modbus chain, ensure the 120Ω termination is active (often handled via a jumper on the board if present).
+
+### 9.4 Pin Mapping Reference
+
+#### 26-Pin Connection Header (Pi Side)
+| Pi Pin | Function | Description |
+| :--- | :--- | :--- |
+| **Pin 1** | **3.3V** | Power supply for board logic. |
+| **Pin 2** | **5V** | Power supply for RS485 transceiver. |
+| **Pin 6** | **GND** | Common Ground. |
+| **Pin 8** | **UART TX** | Pi TX -> Board RX. |
+| **Pin 10** | **UART RX** | Pi RX -> Board TX. |
+
+#### 10-Pin Expansion Header (Board Top)
+| Board Label | Pi GPIO | Physical Pi Pin |
+| :--- | :--- | :--- |
+| **3.3V** | 3.3V Power | Pin 1 |
+| **GND** | Ground | Pin 6 / 9 |
+| **P0** | **GPIO 17** | Pin 11 |
+| **P1** | **GPIO 18** | Pin 12 |
+| **P2** | **GPIO 27** | Pin 13 |
+| **P3** | **GPIO 22** | Pin 15 |
+| **P4** | **GPIO 23** | Pin 16 |
+| **P5** | **GPIO 24** | Pin 18 |
+| **P6** | **GPIO 25** | Pin 22 |
+| **P7** | **GPIO 4** | Pin 7 |
+
+---
+
+## 10. Remote Desktop Access (GUI)
+
+If you need a graphical desktop on Windows without an HDMI monitor:
+
+### 10.1 Installing RDP (Remote Desktop Protocol)
+1.  **Install xrdp**: `sudo apt install xrdp -y`
+2.  **Permissions**: `sudo adduser alphotronic ssl-cert`
+3.  **Troubleshooting (Window closes after login)**:
+    - **Log out** of any local sessions on the physical Pi monitor.
+    - **Switch to X11**: RDP works better with X11 on Pi 5. Run `sudo raspi-config` -> **Advanced Options** -> **Wayland** -> **X11**.
+
+---
+
+## 11. Development Environments
+
+| Feature | VS 2019 Professional | VS Code (Recommended) |
+| :--- | :--- | :--- |
+| **Primary Language** | C++ (Excellent) | Python (Excellent) |
+| **Remote Workflow** | SSH Build / GDBServer | Remote - SSH Extension |
+| **Setup Complexity** | High | Low |
+| **Pi 5 Support** | Manual Configuration | Plug-and-Play |
+
+---
+
+## 12. Recommended Workflow: VS Code Remote - SSH
+
+This is the most efficient way to develop Python on the Raspberry Pi 5.
+
+### 12.1 Setup Steps
+1.  **Windows**: Install **VS Code** and the **Remote - SSH** extension.
+2.  **Connect**: Click the green icon (bottom-left) -> **Connect to Host...** -> `alphotronic@<IP>`.
+3.  **Python Extension**: Once connected to the Pi, go to the Extensions tab and install the **Python** extension *on the remote SSH host*.
+4.  **Interpreter**: Open your project folder and select the Pi's Python interpreter (bottom-right status bar).
+
+---
+
+**Summary**: You have now replaced the STM32F446 firmware logic with a full Debian Linux environment and configured the hardware for RS485 Modbus RTU communication. Your development environment is set up with VS Code Remote - SSH for Python development.
