@@ -139,4 +139,24 @@ As you transition from STM32 development, choosing the right editor is key:
 
 ---
 
+## 8. GPIO Voltage Levels & Hardware Safety
+
+**CRITICAL WARNING**: Unlike many older microcontrollers (like some Arduino models) that use 5V logic, the Raspberry Pi uses **3.3V logic** for its GPIO pins.
+
+- **3.3V Pins**: All GPIO pins (General Purpose Input/Output) operate at **3.3V**.
+- **5V Tolerance**: The GPIO pins are **NOT 5V tolerant**. Connecting a 5V signal directly to a GPIO pin will likely destroy the pin and could permanently damage the entire Raspberry Pi.
+- **Power Pins**: The 40-pin header *does* include two **5V power pins** (Pins 2 and 4) and two **3.3V power pins** (Pins 1 and 17). 
+  - These are for powering external components, but they are separate from the logic/data pins.
+
+| Feature | Voltage Level |
+| :--- | :--- |
+| **GPIO Logic High** | 3.3V |
+| **GPIO Logic Low** | 0V |
+| **GPIO Max Current** | ~16mA per pin (Total ~50mA across all pins recommended) |
+| **Power Output Pins** | 5V and 3.3V available |
+
+**Safe Interfacing**: If you need to connect a 5V sensor or device to your Pi, you must use a **Logic Level Shifter** or a voltage divider to step the signal down to 3.3V.
+
+---
+
 **Summary**: You have now replaced the STM32F446 firmware logic with a full Debian Linux environment. Your next steps will involve porting your peripheral logic (UART, SPI, I2C) to the Linux-equivalent drivers (e.g., `/dev/ttyAMA0`, `/dev/spidev0.0`).
