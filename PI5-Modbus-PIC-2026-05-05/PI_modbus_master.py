@@ -35,11 +35,20 @@ Note: Addresses 1000+ enable little-endian byte order on PIC side.
 --------------------------------------------------------------------------------------------
 """
 
+import csv
+import os
 import serial
 import struct
 import time
+from datetime import datetime
 from pymodbus.client import ModbusSerialClient
 from pymodbus.exceptions import ModbusException
+
+# ============================================================================
+# Bit definitions for status registers
+# ============================================================================
+BIT0      = 0
+BIT1      = 1
 
 # ============================================================================
 # Configuration - adjust these to match your PIC MF40 setup
@@ -169,66 +178,144 @@ def read_status_registers(client):
     curr = read_holding_register_float(client, 208)
     if curr is not None:
         print(f"  [208] I                      = {curr:.2f}")
-
-    # TL_Busy at address 1300 (uint16)
-    TL_busy = read_holding_register_float(client, 300)
-    if TL_busy is not None:
-        print(f"  [1300] TL_Busy                  = {TL_busy:.2f}")
-
-    # TL_Ready at address 1301 (uint16)
-    TL_ready = read_holding_register_float(client, 301)
-    if TL_ready is not None:
-        print(f"  [1301] TL_ready                 = {TL_ready:.2f}")
     
-    # TL_Busy at address 1300 (uint16)
+    # TL_Busy at address 300 (uint16)
     try:
-        result = client.read_holding_registers(address=300, count=1, device_id=SLAVE_ID)
-        if not result.isError():
-            print(f"  [300] TL_Busy                  = {result.registers[0]} (0x{result.registers[0]:04X})")
+        TL_Busy = client.read_holding_registers(address=300, count=1, device_id=SLAVE_ID)
+        if not TL_Busy.isError():
+            print(f"  [300] TL_Busy                  = {TL_Busy.registers[0]} (0x{TL_Busy.registers[0]:04X})")
     except ModbusException as e:
         print(f"  Error reading TL_Busy: {e}")
 
-    # TL_ready at address 1301 (uint16)
+    # TL_ready at address 301 (uint16)
     try:
-        result = client.read_holding_registers(address=301, count=1, device_id=SLAVE_ID)
-        if not result.isError():
-            print(f"  [301] TL_ready                 = {result.registers[0]} (0x{result.registers[0]:04X})")
+        TL_ready = client.read_holding_registers(address=301, count=1, device_id=SLAVE_ID)
+        if not TL_ready.isError():
+            print(f"  [301] TL_ready                 = {TL_ready.registers[0]} (0x{TL_ready.registers[0]:04X})")
     except ModbusException as e:
         print(f"  Error reading TL_ready: {e}")
+
+    '''
+            Reading Temperature List registers
+            BIG ENDIAN = High Register First, then Low Register
+            10000 to 13599 = 3600 registers
+            Read only if TL_ready == 1
+    '''
+    # Extracting bit from TL_BUSY and TL_READY registers
+    val_busy  = TL_Busy.registers[0]  if not TL_Busy.isError()  else 0
+    val_ready = TL_ready.registers[0] if not TL_ready.isError() else 0
+
+    val_busy_ready = (val_busy << BIT1) | (val_ready << BIT0)
+    print(f"  [V] TL_Busy_Ready            = {val_busy_ready} (0x{val_busy_ready:04X})")
+
+    # Initialize static-like variable for status if it doesn't exist
+    if not hasattr(read_status_registers, "val_busy_ready_STATUS"):
+        read_status_registers.val_busy_ready_STATUS = 0
+
+    if val_busy_ready == 1:
+        read_status_registers.val_busy_ready_STATUS = 1
+
+    if read_status_registers.val_busy_ready_STATUS == 1:
+        '''
+                Reading Production Serial Number registers
+                BIG ENDIAN = High Register First, then Low Register
+                308 to 323 = 16 registers
+                Read only if TL_ready == 1
+        '''
+        PSN_START  = 308
+        PSN_END    = 323
+   
+
+        # ----------------------------------------------------------------
+        # read all 3600 TL registers (10000 – 13599) and write CSV
+        # ----------------------------------------------------------------
+        TL_START   = 10000
+        TL_END     = 13599
+        TL_COUNT   = TL_END - TL_START + 1   # 3600 registers
+        CHUNK_SIZE = 125                      # pymodbus max per request
+
+        print(f"\n  [TL] TL_Ready detected — reading {TL_COUNT} registers ({TL_START}–{TL_END})...")
+
+        tl_rows = []   # list of (address, value_dec, value_hex)
+        read_errors = 0
+
+        #--------------------------------------------------------------------
+        # reading PSN registers
+        #--------------------------------------------------------------------
+        # Read all 16 PSN registers (308–323) in one request
+        psn_string = ""
+        try:
+            psn_result = client.read_holding_registers(
+                address=PSN_START, count=(PSN_END - PSN_START + 1), device_id=SLAVE_ID
+            )
+            if not psn_result.isError():
+                psn_chars = []
+                done = False
+                for psn_result_val in psn_result.registers:
+                    # Each register holds 2 ASCII bytes: high byte first
+                    hi_byte = (psn_result_val >> 8) & 0xFF
+                    lo_byte =  psn_result_val       & 0xFF
+                    for psn_result_val_byte in (hi_byte, lo_byte):
+                        if psn_result_val_byte == 0:               # null terminator → stop
+                            done = True
+                            break
+                        if 0x20 <= psn_result_val_byte <= 0x7E:    # printable ASCII only
+                            psn_chars.append(chr(psn_result_val_byte))
+                    if done:
+                        break
+                psn_string = "".join(psn_chars)
+                print(f"  [PSN] Production Serial Number = {psn_string!r}")
+            else:
+                psn_string = "READ_ERROR"
+                print(f"  [PSN] Error reading PSN registers: {psn_result}")
+        except ModbusException as e:
+            psn_string = "EXCEPTION"
+            print(f"  [PSN] Modbus exception reading PSN: {e}")
+
+        addr = TL_START
+        while addr <= TL_END:
+
+            chunk = min(CHUNK_SIZE, TL_END - addr + 1)
+
+            try:
+                result = client.read_holding_registers(addr, count=chunk, device_id=SLAVE_ID)
+                if not result.isError():
+                    for i, reg_val in enumerate(result.registers):
+                        tl_rows.append((addr + i, reg_val, f"0x{reg_val:04X}"))
+                else:
+                    print(f"  [TL] Error reading chunk at {addr}: {result}")
+                    for i in range(chunk):
+                        tl_rows.append((addr + i, "ERR", "ERR"))
+                    read_errors += chunk
+
+            except ModbusException as e:
+                print(f"  [TL] Modbus exception at {addr}: {e}")
+                for i in range(chunk):
+                    tl_rows.append((addr + i, "ERR", "ERR"))
+                read_errors += chunk
+
+            addr += chunk
+
+        # Write collected data to a timestamped CSV file
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        timestamp  = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_path   = os.path.join(script_dir, f"TL_data_{timestamp}.csv")
+
+        try:
+            with open(csv_path, "w", newline="") as csv_file:
+                writer = csv.writer(csv_file)
+                # Write PSN as a metadata row at the top of the CSV
+                writer.writerow(["PSN", psn_string])
+                writer.writerow(["Address", "Temperature_Value_Dec", "Temperature_Value_Hex"])
+                # Write Temperature set and actual values
+                writer.writerows(tl_rows)
+            print(f"  [TL] CSV saved → {csv_path}  ({len(tl_rows)} rows, {read_errors} errors)")
+        except OSError as e:
+            print(f"  [TL] Failed to write CSV: {e}")
+
+        # Reset status so we don't re-read until next TL_Ready pulse
+        read_status_registers.val_busy_ready_STATUS = 0
     
-    # SCADA_Status0 at address 200 (uint16)
-    try:
-        result = client.read_holding_registers(address=200, count=1, device_id=SLAVE_ID)
-        if not result.isError():
-            print(f"  [200] SCADA_Status0            = {result.registers[0]} (0x{result.registers[0]:04X})")
-    except ModbusException as e:
-        print(f"  Error reading SCADA_Status0: {e}")
-
-
-def continuous_monitoring(client, interval=2.0):
-    """Continuously read temperature and power values."""
-    print(f"\n--- Continuous Monitoring (every {interval}s) --- Press Ctrl+C to stop")
-    print(f"  {'Time':<12s} {'TEMP':>10s} {'Power':>10s} {'Current':>10s} {'Freq':>10s} {'REG%':>10s}")
-    print("  " + "-" * 64)
-    
-    while True:
-        temp  = read_holding_register_float(client, 204)
-        power = read_holding_register_float(client, 202)
-        curr  = read_holding_register_float(client, 208)
-        freq  = read_holding_register_float(client, 210)
-        reg   = read_holding_register_float(client, 214)
-        
-        timestamp = time.strftime("%H:%M:%S")
-        print(f"  {timestamp:<12s}"
-              f" {temp if temp is not None else 'ERR':>10}"
-              f" {power if power is not None else 'ERR':>10}"
-              f" {curr if curr is not None else 'ERR':>10}"
-              f" {freq if freq is not None else 'ERR':>10}"
-              f" {reg if reg is not None else 'ERR':>10}")
-        
-        time.sleep(interval)
-
-
 '''
 Main program starts here
 '''
@@ -260,12 +347,9 @@ def main():
         # Read all registers once
         while(True):
             read_status_registers(client)
-            time.sleep(2)
+            time.sleep(1)
             #read_all_rw_registers(client)
             #read_all_ro_registers(client)
-
-        # Start continuous monitoring
-        #continuous_monitoring(client, interval=2.0)
     
     except KeyboardInterrupt:
         print("\n\nProgram stopped by user (Ctrl+C).")
