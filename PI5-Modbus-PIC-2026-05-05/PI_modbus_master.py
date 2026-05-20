@@ -36,6 +36,7 @@ Note: Addresses 1000+ enable little-endian byte order on PIC side.
 """
 
 import csv
+import glob
 import os
 import serial
 import struct
@@ -125,28 +126,6 @@ def read_holding_register_float(client, address, slave_id=SLAVE_ID):
         return None
 
 
-def read_all_ro_registers(client):
-    """Read all Read-Only (measurement) registers from PIC MF40."""
-    print("\n--- Read-Only Registers (Measured Values) ---")
-    for addr, name in sorted(RO_REGISTERS.items()):
-        value = read_holding_register_float(client, addr)
-        if value is not None:
-            print(f"  [{addr:>3d}] {name:<30s} = {value:.4f}")
-        else:
-            print(f"  [{addr:>3d}] {name:<30s} = READ ERROR")
-
-
-def read_all_rw_registers(client):
-    """Read all Read-Write (setpoint) registers from PIC MF40."""
-    print("\n--- Read-Write Registers (Setpoints) ---")
-    for addr, name in sorted(RW_REGISTERS.items()):
-        value = read_holding_register_float(client, addr)
-        if value is not None:
-            print(f"  [{addr:>3d}] {name:<30s} = {value:.4f}")
-        else:
-            print(f"  [{addr:>3d}] {name:<30s} = READ ERROR")
-
-
 def read_status_registers(client):
     """Read SCADA status registers."""
     print("\n--- Status Registers ---")
@@ -224,11 +203,7 @@ def read_status_registers(client):
         '''
         PSN_START  = 308
         PSN_END    = 323
-   
 
-        # ----------------------------------------------------------------
-        # read all 3600 TL registers (10000 – 13599) and write CSV
-        # ----------------------------------------------------------------
         TL_START   = 10000
         TL_END     = 13599
         TL_COUNT   = TL_END - TL_START + 1   # 3600 registers
@@ -240,9 +215,8 @@ def read_status_registers(client):
         read_errors = 0
 
         #--------------------------------------------------------------------
-        # reading PSN registers
-        #--------------------------------------------------------------------
         # Read all 16 PSN registers (308–323) in one request
+        #--------------------------------------------------------------------
         psn_string = ""
         try:
             psn_result = client.read_holding_registers(
@@ -272,6 +246,9 @@ def read_status_registers(client):
             psn_string = "EXCEPTION"
             print(f"  [PSN] Modbus exception reading PSN: {e}")
 
+        # ----------------------------------------------------------------
+        # read all 3600 TL registers (10000 – 13599) and write CSV
+        # ----------------------------------------------------------------
         addr = TL_START
         while addr <= TL_END:
 
@@ -296,10 +273,19 @@ def read_status_registers(client):
 
             addr += chunk
 
-        # Write collected data to a timestamped CSV file
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        timestamp  = datetime.now().strftime("%Y%m%d_%H%M%S")
-        csv_path   = os.path.join(script_dir, f"TL_data_{timestamp}.csv")
+        # Always write to a fresh timestamped CSV; remove the previous one first
+        script_dir    = os.path.dirname(os.path.abspath(__file__))
+        # glob.glob is a file search function. It finds all files matching a wildcard pattern 
+        # and returns them as a list of paths. 
+        # os.path.join is used to join the paths of the directory and the file.
+        # * is a wildcard that matches any sequence of characters.
+        # TL_data_*.csv will match all files starting with TL_data_ and ending with .csv
+        # The list of existing CSVs is stored in the variable existing_csvs.
+        existing_csvs = glob.glob(os.path.join(script_dir, "TL_data_*.csv"))
+        for old_csv in existing_csvs:          # remove old file(s) before writing
+            os.remove(old_csv)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_path  = os.path.join(script_dir, f"TL_data_{timestamp}.csv")
 
         try:
             with open(csv_path, "w", newline="") as csv_file:
