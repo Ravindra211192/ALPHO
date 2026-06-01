@@ -1,3 +1,22 @@
-Openpyxl 3.1.5 is installed.
-sudo: unable to execute ./PI_modbus_master.py: No such file or directory
+def create_excel_table():
+
+  global workbook
+
+  sheet = workbook.active  
+  header_value=('referenceboard', 'date/time-stamp', 'testedboard','interface', 'comment', 'revision', 'author', 'status')
+  cell_range=sheet['A1':'H1']
+  counter=0
+  row_a=sheet[1]
+  sheet.auto_filter.ref="A1:H1"
+  # Creating a few styles in the cell
+  header=NamedStyle(name="header")
+  header.font=Font(bold=True,size=15)
+  header.border=Border(bottom=Side(border_style="thick"))
+  header.alignment=Alignment(horizontal="center", vertical="center")
+
+  for cell in row_a:
+      cell.style=header
+      cell.value=header_value[counter]
+      counter=counter+1
+  workbook.save(filename="validtablelist.xlsx")
 

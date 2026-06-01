@@ -38,3 +38,5 @@ Thumbs.db
 # Add any large data files or secret credentials here
 secrets.json
 *.csv
+*.xlsx
+*.txt

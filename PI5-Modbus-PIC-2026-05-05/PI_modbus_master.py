@@ -43,8 +43,12 @@ import serial
 import struct
 import time
 from datetime import datetime
+
 from pymodbus.client import ModbusSerialClient
 from pymodbus.exceptions import ModbusException
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, Color, Alignment, Border, Side, NamedStyle, colors
 
 # ============================================================================
 # Bit definitions for status registers
@@ -91,9 +95,36 @@ RO_REGISTERS = {
     214: "REG%",
 }
 
-def create_excel_table():
+def create_record_temperatures_excel_table(script_dir, timestamp):
 
     global workbook
+
+    sheet                 = workbook.active
+    header_data           = ('date/time-stamp', 'Set temperature', 'Actual temperature', 'ERROR')
+    cell_range            = sheet['A1':'D1']
+    row_a                 = sheet[1]
+    #apply filter in active sheet
+    sheet.auto_filter.ref = "A1:D1"
+    # Creating a few styles for the header.
+    header                = NamedStyle(name = "header")
+    header.font           = Font(bold=True, size = 15)
+    header.border         = Border(bottom=Side(border_style="thick"))
+    header.alignment      = Alignment(horizontal="center", vertical="center")
+
+    #run loop for header data
+    header_data_counter   = 0
+
+    for dataCell in row_a:
+        dataCell.style       = header
+        dataCell.value       = header_data[header_data_counter]
+        header_data_counter  +=1
+
+    #Save the excel file with same naming nomenclature as CSV (TL_data_{timestamp}.xlsx)
+    excel_path = os.path.join(script_dir, f"TL_data_{timestamp}.xlsx")
+    workbook.save(filename = excel_path)
+    print(f"  [TL] Excel saved → {excel_path}")
+
+    
 
 def registers_to_float(reg_hi, reg_lo):
     """Convert two 16-bit Modbus registers to a 32-bit float (big-endian/word swap).
@@ -278,6 +309,7 @@ def read_status_registers(client):
             addr += chunk
 
         # Always write to a fresh timestamped CSV; remove the previous one first
+        # This is the directory of a script
         script_dir    = os.path.dirname(os.path.abspath(__file__))
         # glob.glob is a file search function. It finds all files matching a wildcard pattern 
         # and returns them as a list of paths. 
@@ -288,6 +320,12 @@ def read_status_registers(client):
         existing_csvs = glob.glob(os.path.join(script_dir, "TL_data_*.csv"))
         for old_csv in existing_csvs:          # remove old file(s) before writing
             os.remove(old_csv)
+
+        # Remove old Excel files before writing a new one (same cleanup as CSV)
+        existing_xlsxs = glob.glob(os.path.join(script_dir, "TL_data_*.xlsx"))
+        for old_xlsx in existing_xlsxs:
+            os.remove(old_xlsx)
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_path  = os.path.join(script_dir, f"TL_data_{timestamp}.csv")
 
@@ -302,6 +340,9 @@ def read_status_registers(client):
             print(f"  [TL] CSV saved → {csv_path}  ({len(tl_rows)} rows, {read_errors} errors)")
         except OSError as e:
             print(f"  [TL] Failed to write CSV: {e}")
+
+        # Generate Excel Table and record set/measured temperature values
+        create_record_temperatures_excel_table(script_dir, timestamp)
 
         # Reset status so we don't re-read until next TL_Ready pulse
         read_status_registers.val_busy_ready_STATUS = 0
@@ -356,4 +397,7 @@ def main():
 
 
 if __name__ == "__main__":
+
+    # Excel workbook for recording temperature data
+    workbook = Workbook()
     main()
