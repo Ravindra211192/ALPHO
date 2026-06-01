@@ -1,3 +1,4 @@
+#!/home/alphotronic/Desktop/ALPHO/PI5-Modbus-PIC-2026-05-05/venv/bin/python3
 '''#!/usr/bin/env python3'''
 
 
@@ -90,6 +91,9 @@ RO_REGISTERS = {
     214: "REG%",
 }
 
+def create_excel_table():
+
+    global workbook
 
 def registers_to_float(reg_hi, reg_lo):
     """Convert two 16-bit Modbus registers to a 32-bit float (big-endian/word swap).
@@ -243,7 +247,7 @@ def read_status_registers(client):
                 psn_string = "READ_ERROR"
                 print(f"  [PSN] Error reading PSN registers: {psn_result}")
         except ModbusException as e:
-            psn_string = "EXCEPTION"
+            psn_string = "MODBUS EXCEPTION OCCURRED"
             print(f"  [PSN] Modbus exception reading PSN: {e}")
 
         # ----------------------------------------------------------------
