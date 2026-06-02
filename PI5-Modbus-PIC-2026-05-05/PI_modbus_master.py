@@ -1,6 +1,4 @@
 #!/home/alphotronic/Desktop/ALPHO/PI5-Modbus-PIC-2026-05-05/venv/bin/python3
-'''#!/usr/bin/env python3'''
-
 
 """-----------------------------------------------------------------------------------------
 PI5 Modbus/RTU Master - Reading data registers from PIC MF40 controller
@@ -49,6 +47,7 @@ from pymodbus.exceptions import ModbusException
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, Color, Alignment, Border, Side, NamedStyle, colors
+from openpyxl.chart import ScatterChart, Reference, Series
 
 # ============================================================================
 # Bit definitions for status registers
@@ -95,17 +94,67 @@ RO_REGISTERS = {
     214: "REG%",
 }
 
-def create_record_temperatures_excel_table(script_dir, timestamp):
+def plot_graph(sheet, num_rows):
+    """Plot Set temperature (Blue) and Measured temperature (Red) vs Pair number
+    as a scatter chart on the right side of the same sheet.
+
+    Args:
+        sheet: Active openpyxl worksheet (data already written)
+        num_rows: Number of data rows (excluding header)
+    """
+    chart = ScatterChart()
+    chart.title  = "Temperature/°C vs Pair Number"
+    chart.style  = 13                        # clean built-in style
+    chart.width  = 30                        # cm – wide enough for 1800 pairs
+    chart.height = 15
+
+    # --- X-axis scaling (Pair Number) ---
+    #chart.x_axis.title       = "Pair Number"
+    chart.x_axis.delete      = False         # force axis labels visible
+    chart.x_axis.tickLblPos  = "low"         # show tick labels at bottom
+    chart.x_axis.numFmt      = "0"           # integer format
+    #chart.x_axis.majorGridlines = None       # no vertical gridlines (cleaner)
+
+    # --- Y-axis scaling (Temperature °C) ---
+    # Note: axis title omitted — chart title already says "Temperature"
+    chart.y_axis.delete      = False         # force axis labels visible
+    chart.y_axis.tickLblPos  = "low"         # show tick labels at left
+    chart.y_axis.numFmt      = "0"           # integer format
+
+    # X-axis data: column B (Pair number), from row 2 to num_rows+1
+    x_values = Reference(sheet, min_col=2, min_row=2, max_row=num_rows + 1)
+
+    # Series 1 – Set temperature (column C) in BLUE
+    set_values = Reference(sheet, min_col=3, min_row=2, max_row=num_rows + 1)
+    series_set = Series(set_values, x_values, title="Set temperature")
+    series_set.graphicalProperties.line.solidFill = "0000FF"
+    series_set.graphicalProperties.line.width     = 20000   # EMU (~0.5 pt)
+    series_set.marker.symbol = "none"                       # line only, no markers
+    chart.series.append(series_set)
+
+    # Series 2 – Measured temperature (column D) in RED
+    meas_values = Reference(sheet, min_col=4, min_row=2, max_row=num_rows + 1)
+    series_meas = Series(meas_values, x_values, title="Measured temperature")
+    series_meas.graphicalProperties.line.solidFill = "FF0000"
+    series_meas.graphicalProperties.line.width     = 20000
+    series_meas.marker.symbol = "none"
+    chart.series.append(series_meas)
+
+    # Place chart to the right of the data (column G, row 1)
+    sheet.add_chart(chart, "G1")
+
+
+def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows):
 
     global workbook
 
     sheet                 = workbook.active
-    header_data           = ('date/time-stamp', 'Set temperature', 'Actual temperature', 'ERROR')
-    cell_range            = sheet['A1':'D1']
+    header_data           = ('Date/time-stamp', 'Pair', 'Set temperature', 'Measured temperature', 'ERROR')
+    cell_range            = sheet['A1':'E1']
     row_a                 = sheet[1]
     #apply filter in active sheet
-    sheet.auto_filter.ref = "A1:D1"
-    # Creating a few styles for the header.
+    sheet.auto_filter.ref = "A1:E1"
+    # Creating a few styles for the header data inside cell.
     header                = NamedStyle(name = "header")
     header.font           = Font(bold=True, size = 15)
     header.border         = Border(bottom=Side(border_style="thick"))
@@ -113,16 +162,36 @@ def create_record_temperatures_excel_table(script_dir, timestamp):
 
     #run loop for header data
     header_data_counter   = 0
-
+    # working with individual cells
     for dataCell in row_a:
         dataCell.style       = header
         dataCell.value       = header_data[header_data_counter]
+        if dataCell.value    == 'Set temperature': 
+            dataCell.font    = Font(bold=True, size = 15, color = "0000FF")
+        elif dataCell.value  == 'Measured temperature':
+            dataCell.font    = Font(bold=True, size = 15, color = "FF0000")
         header_data_counter  +=1
+
+    # Write paired data rows starting from row 2
+    # paired_rows format: (pair_num, set_dec, meas_dec)
+    for row_idx, row_data in enumerate(paired_rows, start=2):
+       
+        # row_data gets the tuple (pair_num, set_temp, meas_temp)
+        sheet.cell(row=row_idx, column=2, value=row_data[0])  # B: Pair number
+        sheet.cell(row=row_idx, column=3, value=row_data[1])  # C: Set temperature
+        sheet.cell(row=row_idx, column=4, value=row_data[2])  # D: Measured temperature
+        sheet.cell(row=row_idx, column=5, value="NO ERROR")   # E: Error
+
+    # Extend auto-filter to cover all data rows
+    sheet.auto_filter.ref = f"A1:E{len(paired_rows) + 1}"
+
+    # Plot temperature graph on the right side of the same sheet
+    plot_graph(sheet, len(paired_rows))
 
     #Save the excel file with same naming nomenclature as CSV (TL_data_{timestamp}.xlsx)
     excel_path = os.path.join(script_dir, f"TL_data_{timestamp}.xlsx")
     workbook.save(filename = excel_path)
-    print(f"  [TL] Excel saved → {excel_path}")
+    print(f"  [TL] Excel saved → {excel_path}  ({len(paired_rows)} paired rows)")
 
     
 
@@ -308,6 +377,23 @@ def read_status_registers(client):
 
             addr += chunk
 
+        # ----------------------------------------------------------------
+        # Pair up raw register data: even offset = Set, odd offset = Measured
+        # Pattern: addr 10000=Set, 10001=Measured, 10002=Set, 10003=Measured ...
+        # ----------------------------------------------------------------
+        paired_rows = []
+        # range(start, stop, step)
+        for idx in range(0, len(tl_rows), 2):
+            set_row = tl_rows[idx]          # even offset: set temperature
+            if idx + 1 < len(tl_rows):
+                meas_row = tl_rows[idx + 1]  # odd offset: measured temperature
+            else:
+                meas_row = ("N/A", "N/A", "N/A")  # safety: if odd total count
+            # Each paired row: (pair_number, set_dec, meas_dec)
+            # pair_num = 1, 2, 3, 4, 5 till 1800
+            pair_num = idx // 2 + 1
+            paired_rows.append((pair_num, set_row[1], meas_row[1]))
+
         # Always write to a fresh timestamped CSV; remove the previous one first
         # This is the directory of a script
         script_dir    = os.path.dirname(os.path.abspath(__file__))
@@ -334,15 +420,15 @@ def read_status_registers(client):
                 writer = csv.writer(csv_file)
                 # Write PSN as a metadata row at the top of the CSV
                 writer.writerow(["PSN", psn_string])
-                writer.writerow(["Address", "Temperature_Value_Dec", "Temperature_Value_Hex"])
-                # Write Temperature set and actual values
-                writer.writerows(tl_rows)
-            print(f"  [TL] CSV saved → {csv_path}  ({len(tl_rows)} rows, {read_errors} errors)")
+                writer.writerow(["Pair", "Set_Temp_Dec", "Measured_Temp_Dec"])
+                # Write paired temperature set and measured values
+                writer.writerows(paired_rows)
+            print(f"  [TL] CSV saved → {csv_path}  ({len(paired_rows)} paired rows, {read_errors} errors)")
         except OSError as e:
             print(f"  [TL] Failed to write CSV: {e}")
 
         # Generate Excel Table and record set/measured temperature values
-        create_record_temperatures_excel_table(script_dir, timestamp)
+        create_record_temperatures_excel_table(script_dir, timestamp, paired_rows)
 
         # Reset status so we don't re-read until next TL_Ready pulse
         read_status_registers.val_busy_ready_STATUS = 0
@@ -352,6 +438,7 @@ Main program starts here
 '''
 def main():
 
+    print(" Software Version: 1.0.0.9")
     print("=" * 60)
     print("  PI5 Modbus/RTU Master - PIC MF40 Controller")
     print(f"  Port: {SERIAL_PORT}  Baud: {BAUDRATE}  Slave ID: {SLAVE_ID}")
