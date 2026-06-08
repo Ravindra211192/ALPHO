@@ -20,3 +20,49 @@ def create_excel_table():
       counter=counter+1
   workbook.save(filename="validtablelist.xlsx")
 
+ if not os.path.isfile(csv_path):
+        print(f"  [USB] CSV not found: {csv_path}")
+        return
+
+    drives = get_usb_drives()
+    if not drives:
+        print("  [USB] No USB drive detected — skipping copy.")
+        return
+
+    for mount, device in drives:
+        dest = os.path.join(mount, os.path.basename(csv_path))
+        print(f"  [USB] Copying {os.path.basename(csv_path)} → {dest} ...")
+        try:
+            shutil.copy2(csv_path, dest)
+            print(f"  [USB] Copy complete.")
+        except OSError as e:
+            print(f"  [USB] Copy failed ({device}): {e}")
+            continue
+
+        # Flush kernel write buffers before unmounting
+        os.sync()
+
+        # Unmount the partition (no sudo needed with udisksctl on Pi OS)
+        try:
+            r = subprocess.run(
+                ["udisksctl", "unmount", "--no-user-interaction", "-b", device],
+                check=True, capture_output=True, text=True
+            )
+            print(f"  [USB] Unmounted {device}.")
+        except subprocess.CalledProcessError as e:
+            print(f"  [USB] Unmount failed ({device}): {e.stderr.strip()}")
+            continue
+
+        # Power off the USB device so it is physically safe to remove
+        try:
+            # Derive the parent disk device (e.g. /dev/sda1 → /dev/sda)
+            disk_device = device.rstrip("0123456789")
+            subprocess.run(
+                ["udisksctl", "power-off", "--no-user-interaction", "-b", disk_device],
+                check=True, capture_output=True, text=True
+            )
+            print(f"  [USB] ✔ Safe to remove USB ({disk_device})")
+        except subprocess.CalledProcessError as e:
+            # power-off is not critical — unmount is sufficient for data safety
+            print(f"  [USB] Power-off skipped ({device}): {e.stderr.strip()}")
+            print(f"  [USB] ✔ Safe to remove USB ({device})")

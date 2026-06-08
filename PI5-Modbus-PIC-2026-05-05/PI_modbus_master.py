@@ -38,6 +38,8 @@ import csv
 import glob
 import os
 import serial
+import shutil
+import subprocess
 import struct
 import time
 from datetime import datetime, timezone
@@ -94,6 +96,100 @@ RO_REGISTERS = {
     214: "REG%",
 }
 
+# ============================================================================
+# USB helper function
+# Function figure out if any USB flash drives are currently plugged in and mounted.
+# ============================================================================
+def get_usb_drives():
+    # A drive qualifies when its mount point starts with /media/<username>/
+    # and the parent directory is mounted (i.e. /media/<username> exists)
+    # check systems environment variables to find the name of the currently logged-in user ('USER') variable
+    # If USER variable is not found, it uses 'alphotronic' as a safe default fallback.
+    media_base = f"/media/{os.getenv('USER', 'alphotronic')}"
+
+    drives = []
+
+    try:
+        # opens a special Linux system file named /proc/mounts.
+        # This file contains a list of all filesystem currently attached(mounted) to the computer
+        with open("/proc/mounts") as f:
+            # Reads the file line by line
+            for line in f:
+                # takes the current line and splits it into a list of words
+                # separating them wherever there is a space
+                split_text = line.split()
+                # ensures the line has at least two columns of data so the script doesn't crash on blank lines.
+                if(len(split_text) >=2 ):
+                    # In file /proc/mounts, the first column split_text[0] is the hardware path (/dev/sda1),
+                    # and the second column split_text[1] is where it is accessible in the folder structure(like /media/alphotronic/MY_USB).
+
+                    device, mount = split_text[0] , split_text[1]
+                    
+                    #checks if the mount point string starts with the media_base string.
+                    # If it does, it means the drive is a USB flash drive and it is mounted.
+                    if(mount.startswith(media_base)):
+                        # If it is a USB flash drive, it is added to the list of drives.
+                        drives.append((mount,device))
+    
+    except OSError as e:
+        print(f"[USB] cannot read {media_base}: {e}")
+
+    return drives
+
+# ============================================================================
+# copy CSV/Excel file to USB
+# ============================================================================
+def copy_file_to_usb(csv_path, excel_path):
+    """Copy the CSV/Excel file to every detected USB drive and safely unmount each.
+
+    Steps for each drive:
+      1. shutil.copy2  – copies file with metadata preserved
+      2. os.sync()     – flushes all pending kernel write buffers
+      3. udisksctl unmount – unmounts without requiring sudo
+      4. udisksctl power-off – spins down / powers off the USB device
+    """
+    # Checks if CSV/Excel file exists
+    if not os.path.isfile(csv_path):
+        print(f" [USB] CSV not found: {csv_path}")
+        return
+    if not os.path.isfile(excel_path):
+        print(f" [USB] CSV not found: {excel_path}")
+        return
+    
+    # look for the USB connected.
+    drives = get_usb_drives()
+
+    # if not USB connected, skip copying and return
+    if not drives:
+        print(f" [USB] No USB detected - skipping copy.")
+        return
+    # if found
+    # device = /dev/sda1 , mount = /media/alphotronic/MY_USB
+    
+    for mount, device in drives:
+        # Copy CSV/Excel file to USB
+        # Constructs the exact destination path. 
+        # It combines the USB drive's folder path (mount) with the name of the file being copied.
+        dest = os.path.join(mount, os.path.basename(csv_path))
+        dest_excel = os.path.join(mount, os.path.basename(excel_path))
+        print(f" [USB] copying {os.path.basename(csv_path)} -> {dest}")
+        print(f" [USB] copying {os.path.basename(excel_path)} -> {dest_excel}")
+        try:
+            # copy csv file to the usb
+            shutil.copy2(csv_path, dest)
+            # copy excel file to the usb
+            shutil.copy2(excel_path, dest_excel)
+            print(f" [USB] Copy complete.")
+        except OSError as e:
+            print(f" [USB] Copy failed ({device}) : {e}")
+
+        # Flushing data in RAM to USB
+        # Calling os.sync() forces the computer to pause 
+        # and ensure all pending data in RAM is completely physically written to the USB stick.
+        os.sync()
+        print(f" [USB] Data synced to USB. It will stay mounted for the next test.")
+
+        
 def plot_graph(sheet, num_rows, psn_string=""):
     """Plot Set temperature (Blue) and Measured temperature (Red) vs Pair number
     as a scatter chart on the right side of the same sheet.
@@ -198,6 +294,8 @@ def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, p
     excel_path = os.path.join(script_dir, f"TL_data_{timestamp}.xlsx")
     workbook.save(filename = excel_path)
     print(f"  [TL] Excel saved → {excel_path}  ({len(paired_rows)} paired rows)")
+    
+    return excel_path
 
     
 
@@ -476,6 +574,7 @@ def read_status_registers(client):
             os.remove(old_xlsx)
 
         csv_path  = os.path.join(script_dir, f"TL_data_{timestamp}.csv")
+        copy_csv_to_USB = 0
 
         try:
             with open(csv_path, "w", newline="") as csv_file:
@@ -485,12 +584,16 @@ def read_status_registers(client):
                 writer.writerow(["Date/time-stamp", "Pair", "Set_Temp_Dec", "Measured_Temp_Dec"])
                 # Write paired temperature set and measured values
                 writer.writerows(paired_rows)
+                copy_csv_to_USB = 1
             print(f"  [TL] CSV saved → {csv_path}  ({len(paired_rows)} paired rows, {read_errors} errors)")
         except OSError as e:
             print(f"  [TL] Failed to write CSV: {e}")
 
         # Generate Excel Table and record set/measured temperature values
-        create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, psn_string, error_string)
+        excel_path = create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, psn_string, error_string)
+        
+        if copy_csv_to_USB == 1:
+            copy_file_to_usb(csv_path, excel_path)
 
         # Reset status so we don't re-read until next TL_Ready pulse
         read_status_registers.val_busy_ready_STATUS = 0
@@ -500,7 +603,7 @@ Main program starts here
 '''
 def main():
 
-    print(" Software Version: 1.0.0.10")
+    print(" Software Version: 1.0.0.11")
     print("=" * 60)
     print("  PI5 Modbus/RTU Master - PIC MF40 Controller")
     print(f"  Port: {SERIAL_PORT}  Baud: {BAUDRATE}  Slave ID: {SLAVE_ID}")
