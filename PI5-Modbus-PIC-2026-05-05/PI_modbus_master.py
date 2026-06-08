@@ -94,16 +94,17 @@ RO_REGISTERS = {
     214: "REG%",
 }
 
-def plot_graph(sheet, num_rows):
+def plot_graph(sheet, num_rows, psn_string=""):
     """Plot Set temperature (Blue) and Measured temperature (Red) vs Pair number
     as a scatter chart on the right side of the same sheet.
 
     Args:
         sheet: Active openpyxl worksheet (data already written)
         num_rows: Number of data rows (excluding header)
+        psn_string: Production Serial Number string for chart title
     """
     chart = ScatterChart()
-    chart.title  = "Temperature/°C vs Pair Number"
+    chart.title  = f"[PSN : {psn_string}] Temperature/°C vs Pair Number"
     chart.style  = 13                        # clean built-in style
     chart.width  = 30                        # cm – wide enough for 1800 pairs
     chart.height = 15
@@ -113,7 +114,7 @@ def plot_graph(sheet, num_rows):
     chart.x_axis.delete      = False         # force axis labels visible
     chart.x_axis.tickLblPos  = "low"         # show tick labels at bottom
     chart.x_axis.numFmt      = "0"           # integer format
-    #chart.x_axis.majorGridlines = None       # no vertical gridlines (cleaner)
+    chart.x_axis.majorGridlines = None       # no vertical gridlines (cleaner)
 
     # --- Y-axis scaling (Temperature °C) ---
     # Note: axis title omitted — chart title already says "Temperature"
@@ -128,7 +129,7 @@ def plot_graph(sheet, num_rows):
     set_values = Reference(sheet, min_col=3, min_row=2, max_row=num_rows + 1)
     series_set = Series(set_values, x_values, title="Set temperature")
     series_set.graphicalProperties.line.solidFill = "0000FF"
-    series_set.graphicalProperties.line.width     = 20000   # EMU (~0.5 pt)
+    series_set.graphicalProperties.line.width     = 40000   # EMU (~1.0 pt)
     series_set.marker.symbol = "none"                       # line only, no markers
     chart.series.append(series_set)
 
@@ -136,7 +137,7 @@ def plot_graph(sheet, num_rows):
     meas_values = Reference(sheet, min_col=4, min_row=2, max_row=num_rows + 1)
     series_meas = Series(meas_values, x_values, title="Measured temperature")
     series_meas.graphicalProperties.line.solidFill = "FF0000"
-    series_meas.graphicalProperties.line.width     = 20000
+    series_meas.graphicalProperties.line.width     = 40000
     series_meas.marker.symbol = "none"
     chart.series.append(series_meas)
 
@@ -144,7 +145,7 @@ def plot_graph(sheet, num_rows):
     sheet.add_chart(chart, "G1")
 
 
-def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows):
+def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, psn_string="", error_string="NO ERROR"):
 
     global workbook
 
@@ -156,7 +157,7 @@ def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows):
     sheet.auto_filter.ref = "A1:E1"
     # Creating a few styles for the header data inside cell.
     header                = NamedStyle(name = "header")
-    header.font           = Font(bold=True, size = 15)
+    header.font           = Font(bold=True, size = 12)
     header.border         = Border(bottom=Side(border_style="thick"))
     header.alignment      = Alignment(horizontal="center", vertical="center")
 
@@ -180,13 +181,14 @@ def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows):
         sheet.cell(row=row_idx, column=2, value=row_data[0])  # B: Pair number
         sheet.cell(row=row_idx, column=3, value=row_data[1])  # C: Set temperature
         sheet.cell(row=row_idx, column=4, value=row_data[2])  # D: Measured temperature
-        sheet.cell(row=row_idx, column=5, value="NO ERROR")   # E: Error
+        
+        sheet.cell(row=row_idx, column=5, value=error_string)   # E: Error
 
     # Extend auto-filter to cover all data rows
     sheet.auto_filter.ref = f"A1:E{len(paired_rows) + 1}"
 
     # Plot temperature graph on the right side of the same sheet
-    plot_graph(sheet, len(paired_rows))
+    plot_graph(sheet, len(paired_rows), psn_string)
 
     #Save the excel file with same naming nomenclature as CSV (TL_data_{timestamp}.xlsx)
     excel_path = os.path.join(script_dir, f"TL_data_{timestamp}.xlsx")
@@ -234,6 +236,9 @@ def read_status_registers(client):
     """Read SCADA status registers."""
     print("\n--- Status Registers ---")
     
+    temp_measurement_err = 0
+    err_I = err_FI = err_PHI = err_Id = err_T = err_Uc = err_EXT = err_H2O = 0
+    
     # SCADA_Cmd0 at address 0 (uint16)
     '''try:
         result = client.read_holding_registers(address=0, count=1, device_id=SLAVE_ID)
@@ -252,15 +257,48 @@ def read_status_registers(client):
     if p is not None:
         print(f"  [2] P                      = {p:.2f}")
 
+    # STATUS0 at address 200 (uint16)
+    try:
+        STATUS0_Temperature_Measurement = client.read_holding_registers(address = 200, count = 1, device_id = SLAVE_ID)
+        if not STATUS0_Temperature_Measurement.isError():
+            status0_val = STATUS0_Temperature_Measurement.registers[0]
+            temp_measurement_err = (status0_val >> 13) & 1
+            print(f"  [200] STATUS0                  = {status0_val} (0x{status0_val:04X})")
+            print(f"  [200] Temp Meas Error (BIT13)  = {temp_measurement_err}")
+    except ModbusException as e:
+        print(f"  Error reading STATUS0: {e}")
+
+    # STATUS1 at address 201 (uint16)
+    try:
+        STATUS1_LED = client.read_holding_registers(address = 201, count = 1, device_id = SLAVE_ID)
+        if not STATUS1_LED.isError():
+            status1_val = STATUS1_LED.registers[0]
+            print(f"  [201] STATUS1                  = {status1_val} (0x{status1_val:04X})")
+            
+            err_I   = (status1_val >> 8) & 1
+            err_FI  = (status1_val >> 9) & 1
+            err_PHI = (status1_val >> 10) & 1
+            err_Id  = (status1_val >> 11) & 1
+            err_T   = (status1_val >> 12) & 1
+            err_H2O = (status1_val >> 13) & 1
+            err_Uc  = (status1_val >> 14) & 1
+            err_EXT = (status1_val >> 15) & 1
+            
+            print(f"  [201] Error I (BIT8)           = {err_I}")
+            print(f"  [201] Error FI (BIT9)          = {err_FI}")
+            print(f"  [201] Error PHI (BIT10)        = {err_PHI}")
+            print(f"  [201] Error Id (BIT11)         = {err_Id}")
+            print(f"  [201] Error T (BIT12)          = {err_T}")
+            print(f"  [201] Error H2O (BIT13)        = {err_H2O}")
+            print(f"  [201] Error Uc (BIT14)         = {err_Uc}")
+            print(f"  [201] Error EXT (BIT15)        = {err_EXT}")
+    except ModbusException as e:
+        print(f" Error reading STATUS1: {e}")    
+
     # TEMP at address 204 (float32)
     temp = read_holding_register_float(client, 204)
     if temp is not None:
         print(f"  [204] TEMP                     = {temp:.2f}")
-
-    # I at address 208 (float32)
-    curr = read_holding_register_float(client, 208)
-    if curr is not None:
-        print(f"  [208] I                      = {curr:.2f}")
     
     # TL_Busy at address 300 (uint16)
     try:
@@ -394,6 +432,20 @@ def read_status_registers(client):
             pair_num = idx // 2 + 1
             paired_rows.append((pair_num, set_row[1], meas_row[1]))
 
+        # create list of error as active_errors from the error flags 
+        active_errors = []
+        if temp_measurement_err: active_errors.append("Temp Measurement") # from STATUS0
+        if err_I: active_errors.append("I")                              # from STATUS1
+        if err_FI: active_errors.append("FI")                            # from STATUS1
+        if err_PHI: active_errors.append("PHI")                          # from STATUS1
+        if err_Id: active_errors.append("Id")                            # from STATUS1     
+        if err_T: active_errors.append("T")                              # from STATUS1
+        if err_H2O: active_errors.append("H2O")                          # from STATUS1
+        if err_Uc: active_errors.append("Uc")                            # from STATUS1
+        if err_EXT: active_errors.append("EXT")                          # from STATUS1
+        
+        error_string = ", ".join(active_errors) if active_errors else "NO ERROR"
+
         # Always write to a fresh timestamped CSV; remove the previous one first
         # This is the directory of a script
         script_dir    = os.path.dirname(os.path.abspath(__file__))
@@ -428,7 +480,7 @@ def read_status_registers(client):
             print(f"  [TL] Failed to write CSV: {e}")
 
         # Generate Excel Table and record set/measured temperature values
-        create_record_temperatures_excel_table(script_dir, timestamp, paired_rows)
+        create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, psn_string, error_string)
 
         # Reset status so we don't re-read until next TL_Ready pulse
         read_status_registers.val_busy_ready_STATUS = 0
