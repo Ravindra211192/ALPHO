@@ -40,13 +40,13 @@ import os
 import serial
 import struct
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pymodbus.client import ModbusSerialClient
 from pymodbus.exceptions import ModbusException
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, Color, Alignment, Border, Side, NamedStyle, colors
+from openpyxl.styles import Font, Color, Alignment, Border, Side, NamedStyle, colors, PatternFill
 from openpyxl.chart import ScatterChart, Reference, Series
 
 # ============================================================================
@@ -174,15 +174,19 @@ def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, p
         header_data_counter  +=1
 
     # Write paired data rows starting from row 2
-    # paired_rows format: (pair_num, set_dec, meas_dec)
+    # paired_rows format: (utc_str, pair_num, set_dec, meas_dec)
     for row_idx, row_data in enumerate(paired_rows, start=2):
        
-        # row_data gets the tuple (pair_num, set_temp, meas_temp)
-        sheet.cell(row=row_idx, column=2, value=row_data[0])  # B: Pair number
-        sheet.cell(row=row_idx, column=3, value=row_data[1])  # C: Set temperature
-        sheet.cell(row=row_idx, column=4, value=row_data[2])  # D: Measured temperature
+        sheet.cell(row=row_idx, column=1, value=row_data[0])  # A: Date/time-stamp
+        sheet.cell(row=row_idx, column=2, value=row_data[1])  # B: Pair number
+        sheet.cell(row=row_idx, column=3, value=row_data[2])  # C: Set temperature
+        sheet.cell(row=row_idx, column=4, value=row_data[3])  # D: Measured temperature
         
-        sheet.cell(row=row_idx, column=5, value=error_string)   # E: Error
+        error_cell = sheet.cell(row=row_idx, column=5, value=error_string)   # E: Error
+        # if ERROR then fill the cell with RED colour
+        if error_string != "NO ERROR":
+            error_cell.fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+            error_cell.font = Font(color="FFFFFF", bold=True) # Optional: make text white and bold for better readability on red
 
     # Extend auto-filter to cover all data rows
     sheet.auto_filter.ref = f"A1:E{len(paired_rows) + 1}"
@@ -419,6 +423,10 @@ def read_status_registers(client):
         # Pair up raw register data: even offset = Set, odd offset = Measured
         # Pattern: addr 10000=Set, 10001=Measured, 10002=Set, 10003=Measured ...
         # ----------------------------------------------------------------
+        
+        utc_now = datetime.now(timezone.utc)
+        timestamp = utc_now.strftime("%Y%m%d_%H%M%S")
+
         paired_rows = []
         # range(start, stop, step)
         for idx in range(0, len(tl_rows), 2):
@@ -427,10 +435,13 @@ def read_status_registers(client):
                 meas_row = tl_rows[idx + 1]  # odd offset: measured temperature
             else:
                 meas_row = ("N/A", "N/A", "N/A")  # safety: if odd total count
-            # Each paired row: (pair_number, set_dec, meas_dec)
+            # Each paired row: (row_utc_str, pair_number, set_dec, meas_dec)
             # pair_num = 1, 2, 3, 4, 5 till 1800
             pair_num = idx // 2 + 1
-            paired_rows.append((pair_num, set_row[1], meas_row[1]))
+            # Generate a new timestamp with milliseconds for each row
+            # [:-3] removes 3 digits from the 6 digits of microseconds and coverts to  milliseconds
+            row_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            paired_rows.append((row_utc_str, pair_num, set_row[1], meas_row[1]))
 
         # create list of error as active_errors from the error flags 
         active_errors = []
@@ -464,15 +475,14 @@ def read_status_registers(client):
         for old_xlsx in existing_xlsxs:
             os.remove(old_xlsx)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_path  = os.path.join(script_dir, f"TL_data_{timestamp}.csv")
 
         try:
             with open(csv_path, "w", newline="") as csv_file:
                 writer = csv.writer(csv_file)
                 # Write PSN as a metadata row at the top of the CSV
-                writer.writerow(["PSN", psn_string])
-                writer.writerow(["Pair", "Set_Temp_Dec", "Measured_Temp_Dec"])
+                writer.writerow(["PSN : ", psn_string])
+                writer.writerow(["Date/time-stamp", "Pair", "Set_Temp_Dec", "Measured_Temp_Dec"])
                 # Write paired temperature set and measured values
                 writer.writerows(paired_rows)
             print(f"  [TL] CSV saved → {csv_path}  ({len(paired_rows)} paired rows, {read_errors} errors)")
@@ -490,7 +500,7 @@ Main program starts here
 '''
 def main():
 
-    print(" Software Version: 1.0.0.9")
+    print(" Software Version: 1.0.0.10")
     print("=" * 60)
     print("  PI5 Modbus/RTU Master - PIC MF40 Controller")
     print(f"  Port: {SERIAL_PORT}  Baud: {BAUDRATE}  Slave ID: {SLAVE_ID}")
