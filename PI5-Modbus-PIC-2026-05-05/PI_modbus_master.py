@@ -42,6 +42,10 @@ import shutil
 import subprocess
 import struct
 import time
+import logging
+
+log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PI_modbus_master_error.log')
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s', filename=log_file_path, filemode='w')
 from datetime import datetime, timezone
 
 from pymodbus.client import ModbusSerialClient
@@ -132,14 +136,14 @@ def get_usb_drives():
                         drives.append((mount,device))
     
     except OSError as e:
-        print(f"[USB] cannot read {media_base}: {e}")
+        logging.error(f"[USB] cannot read {media_base}: {e}")
 
     return drives
 
 # ============================================================================
 # copy CSV/Excel file to USB
 # ============================================================================
-def copy_file_to_usb(csv_path, excel_path):
+def copy_file_to_usb(csv_path, excel_path, log_path=log_file_path):
     """Copy the CSV/Excel file to every detected USB drive and safely unmount each.
 
     Steps for each drive:
@@ -150,10 +154,10 @@ def copy_file_to_usb(csv_path, excel_path):
     """
     # Checks if CSV/Excel file exists
     if not os.path.isfile(csv_path):
-        print(f" [USB] CSV not found: {csv_path}")
+        logging.info(f" [USB] CSV not found: {csv_path}")
         return
     if not os.path.isfile(excel_path):
-        print(f" [USB] CSV not found: {excel_path}")
+        logging.info(f" [USB] CSV not found: {excel_path}")
         return
     
     # look for the USB connected.
@@ -161,7 +165,7 @@ def copy_file_to_usb(csv_path, excel_path):
 
     # if not USB connected, skip copying and return
     if not drives:
-        print(f" [USB] No USB detected - skipping copy.")
+        logging.info(f" [USB] No USB detected - skipping copy.")
         return
     # if found
     # device = /dev/sda1 , mount = /media/alphotronic/MY_USB
@@ -172,22 +176,27 @@ def copy_file_to_usb(csv_path, excel_path):
         # It combines the USB drive's folder path (mount) with the name of the file being copied.
         dest = os.path.join(mount, os.path.basename(csv_path))
         dest_excel = os.path.join(mount, os.path.basename(excel_path))
-        print(f" [USB] copying {os.path.basename(csv_path)} -> {dest}")
-        print(f" [USB] copying {os.path.basename(excel_path)} -> {dest_excel}")
+        dest_log = os.path.join(mount, os.path.basename(log_path))
+        logging.info(f" [USB] copying {os.path.basename(csv_path)} -> {dest}")
+        logging.info(f" [USB] copying {os.path.basename(excel_path)} -> {dest_excel}")
+        if os.path.isfile(log_path):
+            logging.info(f" [USB] copying {os.path.basename(log_path)} -> {dest_log}")
         try:
             # copy csv file to the usb
             shutil.copy2(csv_path, dest)
             # copy excel file to the usb
             shutil.copy2(excel_path, dest_excel)
-            print(f" [USB] Copy complete.")
+            if os.path.isfile(log_path):
+                shutil.copy2(log_path, dest_log)
+            logging.info(f" [USB] Copy complete.")
         except OSError as e:
-            print(f" [USB] Copy failed ({device}) : {e}")
+            logging.error(f" [USB] Copy failed ({device}) : {e}")
 
         # Flushing data in RAM to USB
         # Calling os.sync() forces the computer to pause 
         # and ensure all pending data in RAM is completely physically written to the USB stick.
         os.sync()
-        print(f" [USB] Data synced to USB. It will stay mounted for the next test.")
+        logging.info(f" [USB] Data synced to USB. It will stay mounted for the next test.")
 
         
 def plot_graph(sheet, num_rows, psn_string=""):
@@ -293,7 +302,7 @@ def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, p
     #Save the excel file with same naming nomenclature as CSV (TL_data_{timestamp}.xlsx)
     excel_path = os.path.join(script_dir, f"TL_data_{timestamp}.xlsx")
     workbook.save(filename = excel_path)
-    print(f"  [TL] Excel saved → {excel_path}  ({len(paired_rows)} paired rows)")
+    logging.info(f"  [TL] Excel saved → {excel_path}  ({len(paired_rows)} paired rows)")
     
     return excel_path
 
@@ -326,17 +335,17 @@ def read_holding_register_float(client, address, slave_id=SLAVE_ID):
     try:
         result = client.read_holding_registers(address=address, count=2, device_id=slave_id)
         if result.isError():
-            print(f"  Error reading address {address}: {result}")
+            logging.error(f"  Error reading address {address}: {result}")
             return None
         return registers_to_float(result.registers[0], result.registers[1])
     except ModbusException as e:
-        print(f"  Modbus exception at address {address}: {e}")
+        logging.error(f"  Modbus exception at address {address}: {e}")
         return None
 
 
 def read_status_registers(client):
     """Read SCADA status registers."""
-    print("\n--- Status Registers ---")
+    logging.info("\n--- Status Registers ---")
     
     temp_measurement_err = 0
     err_I = err_FI = err_PHI = err_Id = err_T = err_Uc = err_EXT = err_H2O = 0
@@ -345,19 +354,19 @@ def read_status_registers(client):
     '''try:
         result = client.read_holding_registers(address=0, count=1, device_id=SLAVE_ID)
         if not result.isError():
-            print(f"  [  0] SCADA_Cmd0               = {result.registers[0]} (0x{result.registers[0]:04X})")
+            logging.info(f"  [  0] SCADA_Cmd0               = {result.registers[0]} (0x{result.registers[0]:04X})")
     except ModbusException as e:
-        print(f"  Error reading SCADA_Cmd0: {e}")'''
+        logging.error(f"  Error reading SCADA_Cmd0: {e}")'''
 
     # TEMP_SET at address 4 (float32)
     temp_set = read_holding_register_float(client, 4)
     if temp_set is not None:
-        print(f"  [  4] TEMP_SET                 = {temp_set:.2f}")
+        logging.info(f"  [  4] TEMP_SET                 = {temp_set:.2f}")
 
     # P at address 2 (float32)
     p = read_holding_register_float(client, 2)
     if p is not None:
-        print(f"  [2] P                      = {p:.2f}")
+        logging.info(f"  [2] P                      = {p:.2f}")
 
     # STATUS0 at address 200 (uint16)
     try:
@@ -365,17 +374,16 @@ def read_status_registers(client):
         if not STATUS0_Temperature_Measurement.isError():
             status0_val = STATUS0_Temperature_Measurement.registers[0]
             temp_measurement_err = (status0_val >> 13) & 1
-            print(f"  [200] STATUS0                  = {status0_val} (0x{status0_val:04X})")
-            print(f"  [200] Temp Meas Error (BIT13)  = {temp_measurement_err}")
+            logging.info(f"  [200] STATUS0                  = {status0_val} (0x{status0_val:04X})")
     except ModbusException as e:
-        print(f"  Error reading STATUS0: {e}")
+        logging.error(f"  Error reading STATUS0: {e}")
 
     # STATUS1 at address 201 (uint16)
     try:
         STATUS1_LED = client.read_holding_registers(address = 201, count = 1, device_id = SLAVE_ID)
         if not STATUS1_LED.isError():
             status1_val = STATUS1_LED.registers[0]
-            print(f"  [201] STATUS1                  = {status1_val} (0x{status1_val:04X})")
+            logging.info(f"  [201] STATUS1                  = {status1_val} (0x{status1_val:04X})")
             
             err_I   = (status1_val >> 8) & 1
             err_FI  = (status1_val >> 9) & 1
@@ -386,37 +394,29 @@ def read_status_registers(client):
             err_Uc  = (status1_val >> 14) & 1
             err_EXT = (status1_val >> 15) & 1
             
-            print(f"  [201] Error I (BIT8)           = {err_I}")
-            print(f"  [201] Error FI (BIT9)          = {err_FI}")
-            print(f"  [201] Error PHI (BIT10)        = {err_PHI}")
-            print(f"  [201] Error Id (BIT11)         = {err_Id}")
-            print(f"  [201] Error T (BIT12)          = {err_T}")
-            print(f"  [201] Error H2O (BIT13)        = {err_H2O}")
-            print(f"  [201] Error Uc (BIT14)         = {err_Uc}")
-            print(f"  [201] Error EXT (BIT15)        = {err_EXT}")
     except ModbusException as e:
-        print(f" Error reading STATUS1: {e}")    
+        logging.error(f" Error reading STATUS1: {e}")    
 
     # TEMP at address 204 (float32)
     temp = read_holding_register_float(client, 204)
     if temp is not None:
-        print(f"  [204] TEMP                     = {temp:.2f}")
+        logging.info(f"  [204] TEMP                     = {temp:.2f}")
     
     # TL_Busy at address 300 (uint16)
     try:
         TL_Busy = client.read_holding_registers(address=300, count=1, device_id=SLAVE_ID)
         if not TL_Busy.isError():
-            print(f"  [300] TL_Busy                  = {TL_Busy.registers[0]} (0x{TL_Busy.registers[0]:04X})")
+            logging.info(f"  [300] TL_Busy                  = {TL_Busy.registers[0]} (0x{TL_Busy.registers[0]:04X})")
     except ModbusException as e:
-        print(f"  Error reading TL_Busy: {e}")
+        logging.error(f"  Error reading TL_Busy: {e}")
 
     # TL_ready at address 301 (uint16)
     try:
         TL_ready = client.read_holding_registers(address=301, count=1, device_id=SLAVE_ID)
         if not TL_ready.isError():
-            print(f"  [301] TL_ready                 = {TL_ready.registers[0]} (0x{TL_ready.registers[0]:04X})")
+            logging.info(f"  [301] TL_ready                 = {TL_ready.registers[0]} (0x{TL_ready.registers[0]:04X})")
     except ModbusException as e:
-        print(f"  Error reading TL_ready: {e}")
+        logging.error(f"  Error reading TL_ready: {e}")
 
     '''
             Reading Temperature List registers
@@ -429,7 +429,7 @@ def read_status_registers(client):
     val_ready = TL_ready.registers[0] if not TL_ready.isError() else 0
 
     val_busy_ready = (val_busy << BIT1) | (val_ready << BIT0)
-    print(f"  [V] TL_Busy_Ready            = {val_busy_ready} (0x{val_busy_ready:04X})")
+    logging.info(f"  [V] TL_Busy_Ready            = {val_busy_ready} (0x{val_busy_ready:04X})")
 
     # Initialize static-like variable for status if it doesn't exist
     if not hasattr(read_status_registers, "val_busy_ready_STATUS"):
@@ -453,7 +453,7 @@ def read_status_registers(client):
         TL_COUNT   = TL_END - TL_START + 1   # 3600 registers
         CHUNK_SIZE = 125                      # pymodbus max per request
 
-        print(f"\n  [TL] TL_Ready detected — reading {TL_COUNT} registers ({TL_START}–{TL_END})...")
+        logging.info(f"\n  [TL] TL_Ready detected — reading {TL_COUNT} registers ({TL_START}–{TL_END})...")
 
         tl_rows = []   # list of (address, value_dec, value_hex)
         read_errors = 0
@@ -482,13 +482,13 @@ def read_status_registers(client):
                     if done:
                         break
                 psn_string = "".join(psn_chars)
-                print(f"  [PSN] Production Serial Number = {psn_string!r}")
+                logging.info(f"  [PSN] Production Serial Number = {psn_string!r}")
             else:
                 psn_string = "READ_ERROR"
-                print(f"  [PSN] Error reading PSN registers: {psn_result}")
+                logging.error(f"  [PSN] Error reading PSN registers: {psn_result}")
         except ModbusException as e:
             psn_string = "MODBUS EXCEPTION OCCURRED"
-            print(f"  [PSN] Modbus exception reading PSN: {e}")
+            logging.error(f"  [PSN] Modbus exception reading PSN: {e}")
 
         # ----------------------------------------------------------------
         # read all 3600 TL registers (10000 – 13599) and write CSV
@@ -504,13 +504,13 @@ def read_status_registers(client):
                     for i, reg_val in enumerate(result.registers):
                         tl_rows.append((addr + i, reg_val, f"0x{reg_val:04X}"))
                 else:
-                    print(f"  [TL] Error reading chunk at {addr}: {result}")
+                    logging.error(f"  [TL] Error reading chunk at {addr}: {result}")
                     for i in range(chunk):
                         tl_rows.append((addr + i, "ERR", "ERR"))
                     read_errors += chunk
 
             except ModbusException as e:
-                print(f"  [TL] Modbus exception at {addr}: {e}")
+                logging.error(f"  [TL] Modbus exception at {addr}: {e}")
                 for i in range(chunk):
                     tl_rows.append((addr + i, "ERR", "ERR"))
                 read_errors += chunk
@@ -585,9 +585,9 @@ def read_status_registers(client):
                 # Write paired temperature set and measured values
                 writer.writerows(paired_rows)
                 copy_csv_to_USB = 1
-            print(f"  [TL] CSV saved → {csv_path}  ({len(paired_rows)} paired rows, {read_errors} errors)")
+            logging.info(f"  [TL] CSV saved → {csv_path}  ({len(paired_rows)} paired rows, {read_errors} errors)")
         except OSError as e:
-            print(f"  [TL] Failed to write CSV: {e}")
+            logging.error(f"  [TL] Failed to write CSV: {e}")
 
         # Generate Excel Table and record set/measured temperature values
         excel_path = create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, psn_string, error_string)
@@ -603,11 +603,11 @@ Main program starts here
 '''
 def main():
 
-    print(" Software Version: 1.0.0.11")
-    print("=" * 60)
-    print("  PI5 Modbus/RTU Master - PIC MF40 Controller")
-    print(f"  Port: {SERIAL_PORT}  Baud: {BAUDRATE}  Slave ID: {SLAVE_ID}")
-    print("=" * 60)
+    print(" [APPLICATION] Running Program ... Software Version: 1.0.0.11")
+    logging.info("=" * 60)
+    logging.info("  PI5 Modbus/RTU Master - PIC MF40 Controller")
+    logging.info(f"  Port: {SERIAL_PORT}  Baud: {BAUDRATE}  Slave ID: {SLAVE_ID}")
+    logging.info("=" * 60)
 
     # Create Modbus RTU client (Pi is the MASTER, PIC is the SLAVE)
     client = ModbusSerialClient(
@@ -622,10 +622,10 @@ def main():
     try:
         # Connect to serial port
         if not client.connect():
-            print(f"Error: Could not connect to {SERIAL_PORT}")
+            logging.error(f"Error: Could not connect to {SERIAL_PORT}")
             return
         
-        print(f"\nConnected to {SERIAL_PORT} successfully.")
+        logging.info(f"\nConnected to {SERIAL_PORT} successfully.")
 
         # Read all registers once
         while(True):
@@ -638,14 +638,14 @@ def main():
         print("\n\nProgram stopped by user (Ctrl+C).")
 
     except serial.SerialException as e:
-        print(f"\nSerial port error: {e}")
+        logging.error(f"\nSerial port error: {e}")
 
     except Exception as e:
-        print(f"\nUnexpected error: {e}")
+        logging.error(f"\nUnexpected error: {e}")
 
     finally:
         client.close()
-        print("Modbus connection closed.")
+        logging.info("Modbus connection closed.")
 
 
 if __name__ == "__main__":
