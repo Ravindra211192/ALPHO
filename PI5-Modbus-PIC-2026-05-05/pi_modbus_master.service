@@ -1,0 +1,25 @@
+[Unit]
+Description=PI5 Modbus/RTU Master - PIC MF40 Controller
+# Wait until the system is fully booted(multi-user.target) and serial port(dev-ttyAMA0.device) is available
+After=multi-user.target dev-ttyAMA0.device
+Wants=dev-ttyAMA0.device
+
+[Service]
+Type=simple
+# Run as the alphotronic user (needed for USB drive access via /media/alphotronic/)
+User=alphotronic
+Group=alphotronic
+# Set working directory to the script's location
+WorkingDirectory=/home/alphotronic/Desktop/ALPHO/PI5-Modbus-PIC-2026-05-05
+# Use the venv Python interpreter to run the script
+ExecStart=/home/alphotronic/Desktop/ALPHO/PI5-Modbus-PIC-2026-05-05/venv/bin/python3 /home/alphotronic/Desktop/ALPHO/PI5-Modbus-PIC-2026-05-05/PI_modbus_master.py
+# Restart automatically if the script crashes (after a 5-second delay)
+Restart=on-failure
+RestartSec=5
+# Give serial port time to initialize before starting
+ExecStartPre=/bin/sleep 5
+# Environment: ensure USER is set (used by get_usb_drives())
+Environment=USER=alphotronic
+
+[Install]
+WantedBy=multi-user.target

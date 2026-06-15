@@ -255,7 +255,7 @@ def create_record_temperatures_excel_table(script_dir, timestamp, paired_rows, p
     global workbook
 
     sheet                 = workbook.active
-    header_data           = ('Date/time-stamp', 'Pair', 'Set temperature', 'Measured temperature', 'ERROR')
+    header_data           = ('UTC Date/time-stamp', 'Pair', 'Set temperature', 'Measured temperature', 'ERROR')
     cell_range            = sheet['A1':'E1']
     row_a                 = sheet[1]
     #apply filter in active sheet
